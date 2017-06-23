@@ -1,0 +1,41 @@
+### Go ###
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+
+# Directories
+_obj
+_test
+bin
+
+# Architecture specific extensions/prefixes
+*.[568vq]
+[568vq].out
+
+*.cgo1.go
+*.cgo2.c
+_cgo_defun.c
+_cgo_gotypes.go
+_cgo_export.*
+
+_testmain.go
+
+.DS_Store
+*.exe
+*.test
+*.prof
+
+#sublime text stuff
+*.sublime-workspace
+
+#vscode
+debug
+.vscode
+
+# qclauncher specific
+qclauncher.exe
+qclauncher.log
+qclauncher_amd64.syso
+data.qcl
+data.qcl.lock
