@@ -13,7 +13,7 @@ const (
 	DataFile = "data.qcl"
 	bDefBase = "buildinfo.cdp.bethesda.net"
 	sDefBase = "services.bethesda.net"
-	version  = 1.00
+	version  = 1.01
 )
 
 var (

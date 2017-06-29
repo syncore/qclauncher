@@ -20,12 +20,11 @@ func init() {
 	flag.BoolVar(&qclauncher.ConfLocal, "local", false, "Run in a local test environment")
 	flag.BoolVar(&qclauncher.ConfDebug, "debug", false, "Log debug messages in addition to errors")
 	flag.StringVar(&qclauncher.ConfLocalAddr, "localaddr", "localhost:30002", "Local endpoint host:port for test environment")
-	flag.StringVar(&qclauncher.ConfXAppVer, "xappver", "1.20.2", "Manually specify app version for request header")
-	flag.StringVar(&qclauncher.ConfXLibVer, "xlibver", "1.20.2", "Manually specify lib version for request header")
-	flag.Int64Var(&qclauncher.ConfUpdateInterval, "updateinterval", 129600, "Time in seconds between checking for QC & launcher updates") // 36 hours (129600)
+	flag.StringVar(&qclauncher.ConfXAppVer, "xappver", "1.20.4", "Manually specify app version for request header")
+	flag.StringVar(&qclauncher.ConfXLibVer, "xlibver", "1.20.4", "Manually specify lib version for request header")
+	flag.Int64Var(&qclauncher.ConfUpdateInterval, "updateinterval", 86400, "Time in seconds between checking for launcher updates") // 24 hours (86400)
 	flag.BoolVar(&qclauncher.ConfSkipUpdates, "skipupdates", false, "Skip checking for QC and launcher updates")
 	flag.BoolVar(&qclauncher.ConfEnforceHash, "enforcehash", true, "Enforce QC game hash checking (disabling is not recommended)")
-
 }
 
 func main() {

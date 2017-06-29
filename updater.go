@@ -27,9 +27,10 @@ func Update(enforceHashIntegrity bool) bool {
 		logUpdateError(err, updateQC, time.Now().Unix())
 		return continueLaunch
 	}
-	if isUpdateDue(updateData.LastQCUpdateTime) {
-		checkForQCUpdate(enforceHashIntegrity)
-	}
+	// In the current beta state of the game, updates will be frequent, so verify QC against the
+	// latest version from Bethesda on every launch.
+	checkForQCUpdate(enforceHashIntegrity)
+
 	if isUpdateDue(updateData.LastLauncherUpdateTime) {
 		continueLaunch = checkForLauncherUpdate()
 	}
