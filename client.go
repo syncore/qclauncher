@@ -40,10 +40,15 @@ func (e *authFailedError) Error() string {
 }
 
 func Launch() error {
-	lc := newLauncherClient(10)
+	lc := newLauncherClient(defTimeout)
 	lc.checkServerStatus()
 	err := lc.authenticate()
 	if err != nil {
+		return err
+	}
+	qcOpts, err := getQCOptions()
+	if err != nil {
+		logger.Errorw("Launch: getQCOptions error", "error", err, "data", qcOpts)
 		return err
 	}
 	buildInfo, err := lc.getBuildInfo()
@@ -63,7 +68,7 @@ func Launch() error {
 		logger.Errorw("Launch: getLaunchArgs error", "error", err, "data", launchArgs)
 		return err
 	}
-	exArgs := launchArgs.extractLaunchArgs(branchInfo.LaunchinfoList[0])
+	exArgs := launchArgs.extractLaunchArgs(branchInfo.LaunchinfoList[0], qcOpts.QCLanguage)
 	logger.Debugw("Launch args", "launchArgs", launchArgs)
 	logger.Debugw("Extracted launch args", "exArgs", exArgs)
 	gameCode, err := lc.getGameCode(buildInfo.Projects[0].ID)
@@ -75,11 +80,6 @@ func Launch() error {
 	finalArgs := strings.Replace(exArgs, gameCodeTempl, gameCode.Gamecode, -1)
 	logger.Debugw("Final arguments", "finalArgs", finalArgs)
 	logger.Debug("Launching....")
-	qcOpts, err := getQCOptions()
-	if err != nil {
-		logger.Errorw("Launch: getQCOptions error", "error", err, "data", qcOpts)
-		return err
-	}
 	return runQC(qcOpts.QCFilePath, finalArgs)
 }
 
@@ -355,7 +355,7 @@ func (lc *launcherClient) send(req localRequest) (interface{}, error) {
 	return response, nil
 }
 
-func (r *LaunchArgsResponse) extractLaunchArgs(liKey int) string {
+func (r *LaunchArgsResponse) extractLaunchArgs(liKey int, language string) string {
 	fallback := strings.Replace(defArgs, langTempl, defLang, -1)
 	if r == nil {
 		logger.Info("extractLaunchArgs: launch args was nil, using fallback arguments")
@@ -382,7 +382,7 @@ func (r *LaunchArgsResponse) extractLaunchArgs(liKey int) string {
 	if found {
 		v := r.LaunchinfoSet.Default.LaunchArgs
 		v = strings.Replace(v, "\\", "", -1)
-		v = strings.Replace(v, langTempl, defLang, -1)
+		v = strings.Replace(v, langTempl, language, -1)
 		return v
 	}
 	logger.Infof("extractLaunchArgs: launch info key (%d) passed in had no match, using fallback arguments", liKey)
@@ -397,10 +397,14 @@ func formatUnexpectedResponse(event string) error {
 func runQC(qcPath, qcArgs string) error {
 	qc := exec.Command(qcPath)
 	qc.Dir = filepath.Dir(qcPath)
+	a := qcArgs
+	if ConfAppendCustomArgs != "" {
+		a = fmt.Sprintf("%s %s", qcArgs, ConfAppendCustomArgs)
+	}
 	// Handle arg quote-escaping manually (see golang issue #15566)
 	qc.SysProcAttr = &syscall.SysProcAttr{
 		HideWindow:    false,
-		CmdLine:       fmt.Sprintf(` %s`, qcArgs),
+		CmdLine:       fmt.Sprintf(` %s`, a),
 		CreationFlags: 0,
 	}
 	if err := qc.Start(); err != nil {

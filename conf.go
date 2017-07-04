@@ -9,31 +9,36 @@ import (
 )
 
 const (
-	LogFile  = "qclauncher.log"
-	DataFile = "data.qcl"
-	bDefBase = "buildinfo.cdp.bethesda.net"
-	sDefBase = "services.bethesda.net"
-	version  = 1.01
+	LogFile    = "qclauncher.log"
+	DataFile   = "data.qcl"
+	XAppDefVer = "1.20.5"
+	XLibDefVer = "1.20.5"
+	bDefBase   = "buildinfo.cdp.bethesda.net"
+	sDefBase   = "services.bethesda.net"
+	defTimeout = 10
+	version    = 1.01
 )
 
 var (
-	ConfLocal          bool
-	ConfDebug          bool
-	ConfLocalAddr      string
-	ConfXAppVer        string
-	ConfXLibVer        string
-	ConfUpdateInterval int64
-	ConfSkipUpdates    bool
-	ConfEnforceHash    bool
-	ConfBaseSvc        string
-	ConfBaseBi         string
-	ConfSrcFp          string
+	ConfLocal            bool
+	ConfDebug            bool
+	ConfAppendCustomArgs string
+	ConfLocalAddr        string
+	ConfXAppVer          string
+	ConfXLibVer          string
+	ConfUpdateInterval   int64
+	ConfSkipUpdates      bool
+	ConfEnforceHash      bool
+	ConfBaseSvc          string
+	ConfBaseBi           string
+	ConfSrcFp            string
 )
 
 func Setup() {
 	setLogger()
 	setBaseAddr()
 	setSrcFp()
+	setVersionInfo()
 }
 
 func GetDataFilePath() string {
@@ -51,6 +56,27 @@ func setBaseAddr() {
 
 func setSrcFp() {
 	ConfSrcFp = genFp()
+}
+
+func setVersionInfo() {
+	if ConfXAppVer != XAppDefVer && ConfXLibVer != XLibDefVer {
+		return
+	}
+	lc := newLauncherClient(7)
+	uinfo, err := lc.getQCUpdateInfo()
+	if err != nil {
+		return
+	}
+	cachedQCUpdateInfo = uinfo
+	if uinfo.BVer == "" {
+		return
+	}
+	if ConfXAppVer == XAppDefVer {
+		ConfXAppVer = uinfo.BVer
+	}
+	if ConfXLibVer == XLibDefVer {
+		ConfXLibVer = uinfo.BVer
+	}
 }
 
 func getLogFilePath() string {

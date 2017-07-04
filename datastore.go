@@ -21,6 +21,7 @@ var (
 	rndencKey             = "rndenc"
 	qcAuthTokenKey        = "authqc"
 	qcFilePathKey         = "fpathqc"
+	qcLangKey             = "langqc"
 	lastUpdateQCKey       = "lastqcupd"
 	lastUpdateLauncherKey = "lastlchupd"
 	dfVerKey              = "dbver"
@@ -31,7 +32,7 @@ var (
 	tmpKey                  *[]byte
 )
 
-const dataFileVersion int64 = 1
+const dataFileVersion int64 = 2
 
 func updateAuthToken(isPreSaveVerification bool, authToken string) error {
 	if isPreSaveVerification {
@@ -227,16 +228,17 @@ func getQCOptions() (*QCOptions, error) {
 		return nil, err
 	}
 	defer db.Close()
-	var qcfp []byte
+	var qcfp, qclang []byte
 	if err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(qcOptBucket))
 		qcfp = b.Get([]byte(qcFilePathKey))
+		qclang = b.Get([]byte(qcLangKey))
 		return nil
 	}); err != nil {
 		logger.Errorw("getQCOptions: error getting QC options from datastore", "error", err)
 		return nil, err
 	}
-	return &QCOptions{QCFilePath: string(qcfp)}, nil
+	return &QCOptions{QCFilePath: string(qcfp), QCLanguage: string(qclang)}, nil
 }
 
 func checkDataFile(skipVersionCheck bool) {
@@ -290,7 +292,12 @@ func saveQCOptions(qco *QCOptions) error {
 		}
 		dberr = b.Put([]byte(qcFilePathKey), []byte(qco.QCFilePath))
 		if dberr != nil {
-			logger.Errorw("saveQCOptions: error saving QC options to datastore", "error", dberr)
+			logger.Errorw("saveQCOptions: error saving QC filepath option to datastore", "error", dberr)
+			return dberr
+		}
+		dberr = b.Put([]byte(qcLangKey), []byte(qco.QCLanguage))
+		if dberr != nil {
+			logger.Errorw("saveQCOptions: error saving QC language option to datastore", "error", dberr)
 			return dberr
 		}
 		return nil
@@ -316,7 +323,7 @@ func saveUserCredentials(quc *QCUserCredentials) error {
 	}
 	db, err := bolt.Open(GetDataFilePath(), 0600, nil)
 	if err != nil {
-		logger.Errorw("saveQCOptions: error opening data file", "error", err)
+		logger.Errorw("saveUserCredentials: error opening data file", "error", err)
 		return err
 	}
 	defer db.Close()

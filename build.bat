@@ -1,8 +1,8 @@
 @echo off
-if exist bin rmdir /S /Q bin
-go install -ldflags="-H windowsgui -s -w" github.com/syncore/qclauncher
-go install github.com/josephspurrier/goversioninfo/cmd/goversioninfo
-go install github.com/jteeuwen/go-bindata/...
+cd %GOPATH%\src\github.com\syncore\qclauncher
+if exist %GOPATH%\src\github.com\syncore\qclauncher\bin rmdir /S /Q %GOPATH%\src\github.com\syncore\qclauncher\bin
+go get github.com/josephspurrier/goversioninfo/cmd/goversioninfo
+go get github.com/jteeuwen/go-bindata/...
 if exist %GOPATH%\bin\goversioninfo.exe copy /Y %GOPATH%\bin\goversioninfo.exe cmd\qclauncher\ >NUL
 if exist %GOPATH%\bin\go-bindata.exe copy /Y %GOPATH%\bin\go-bindata.exe cmd\qclauncher\ >NUL
 if exist qclauncher.exe del /Q qclauncher.exe

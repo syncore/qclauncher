@@ -83,7 +83,7 @@ func ResourcesImgQclauncherPng() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "../../resources/img/qclauncher.png", size: 32821, mode: os.FileMode(420), modTime: time.Unix(1498768401, 0)}
+	info := bindataFileInfo{name: "../../resources/img/qclauncher.png", size: 32821, mode: os.FileMode(438), modTime: time.Unix(1499062493, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

@@ -11,6 +11,12 @@ type UserSettings struct {
 	FilePath          string
 	PasswordConfirm   string
 	SetAsNonSteamGame bool
+	Language          string
+}
+
+type Language struct {
+	LangCode string
+	Name     string
 }
 
 type QCUserCredentials struct {
@@ -21,6 +27,7 @@ type QCUserCredentials struct {
 
 type QCOptions struct {
 	QCFilePath string
+	QCLanguage string
 }
 
 type UpdateTime struct {

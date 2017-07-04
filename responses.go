@@ -172,6 +172,7 @@ type UpdateQCResponse struct {
 	ID   int       `json:"id"`
 	Date time.Time `json:"date"`
 	Hash string    `json:"hash"`
+	BVer string    `json:"bver"`
 }
 
 type UpdateLauncherResponse struct {

@@ -20,6 +20,8 @@ const (
 	updateLauncher
 )
 
+var cachedQCUpdateInfo *UpdateQCResponse
+
 func Update(enforceHashIntegrity bool) bool {
 	continueLaunch := true
 	updateData, err := getLastUpdateTime()
@@ -27,17 +29,19 @@ func Update(enforceHashIntegrity bool) bool {
 		logUpdateError(err, updateQC, time.Now().Unix())
 		return continueLaunch
 	}
-	// In the current beta state of the game, updates will be frequent, so verify QC against the
-	// latest version from Bethesda on every launch.
-	checkForQCUpdate(enforceHashIntegrity)
+	l := newLauncherClient(defTimeout)
+	// Verify QC against the latest version (default) from Bethesda on every launch unless disabled
+	l.checkForQCUpdate(enforceHashIntegrity)
 
 	if isUpdateDue(updateData.LastLauncherUpdateTime) {
-		continueLaunch = checkForLauncherUpdate()
+		continueLaunch = l.checkForLauncherUpdate()
 	}
 	return continueLaunch
 }
 
-func checkForQCUpdate(enforceHashIntegrity bool) {
+func (lc *launcherClient) checkForQCUpdate(enforceHashIntegrity bool) {
+	var err error
+	var qcUpdateInfo *UpdateQCResponse
 	now := time.Now().Unix()
 	t := now
 	qcHash, err := getHash()
@@ -45,11 +49,16 @@ func checkForQCUpdate(enforceHashIntegrity bool) {
 		logUpdateError(err, updateQC, now)
 		return
 	}
-	lc := newLauncherClient(10)
-	qcUpdateInfo, err := lc.getQCUpdateInfo()
-	if err != nil {
-		logUpdateError(err, updateQC, now)
-		return
+	if cachedQCUpdateInfo == nil {
+		logger.Debug("checkForQCUpdate: cachedQCUpdateInfo is nil, getting fresh update info")
+		qcUpdateInfo, err = lc.getQCUpdateInfo()
+		if err != nil {
+			logUpdateError(err, updateQC, now)
+			return
+		}
+	} else {
+		qcUpdateInfo = cachedQCUpdateInfo
+		logger.Debugf("checkForQCUpdate: using already-present cachedQCUpdateInfo: %+v", cachedQCUpdateInfo)
 	}
 	if !strings.EqualFold(qcHash, qcUpdateInfo.Hash) {
 		t = 0 // try next time
@@ -74,10 +83,9 @@ func checkForQCUpdate(enforceHashIntegrity bool) {
 	}
 }
 
-func checkForLauncherUpdate() bool {
+func (lc *launcherClient) checkForLauncherUpdate() bool {
 	now := time.Now().Unix()
 	continueLaunch := true
-	lc := newLauncherClient(10)
 	linfo, err := lc.getLauncherUpdateInfo()
 	if err != nil {
 		logUpdateError(err, updateLauncher, now)

@@ -103,7 +103,7 @@ func runSettingsCollectionDialog(owner walk.Form, userSettings *UserSettings) (i
 			DataSource:     userSettings,
 			ErrorPresenter: wd.ToolTipErrorPresenter{},
 		},
-		MinSize: wd.Size{Width: 300, Height: 300},
+		MinSize: wd.Size{Width: 300, Height: 355},
 		Layout:  wd.VBox{},
 		Children: []wd.Widget{
 			wd.Composite{
@@ -129,6 +129,27 @@ func runSettingsCollectionDialog(owner walk.Form, userSettings *UserSettings) (i
 						ColumnSpan:   2,
 						Text:         wd.Bind("PasswordConfirm"),
 						PasswordMode: true,
+					},
+					wd.Label{
+						Text: "QC Language:",
+					},
+					wd.ComboBox{
+						ColumnSpan:    2,
+						Editable:      false,
+						Value:         wd.Bind("Language"),
+						BindingMember: "LangCode",
+						DisplayMember: "Name",
+						Model: []*Language{
+							{"en", "English"},
+							{"es", "Español"},
+							{"es-419", "Español (Latinoamérica)"},
+							{"de", "Deutsch"},
+							{"fr", "Français"},
+							{"it", "Italiano"},
+							{"pl", "Polski"},
+							{"pt", "Português (Brasil)"},
+							{"ru", "Русский"},
+						},
 					},
 					wd.Label{
 						ColumnSpan: 2,
@@ -212,7 +233,7 @@ func saveUserSettings(us *UserSettings) error {
 		logger.Errorw("saveUserSettings: error saving user credentials", "error", err)
 		return err
 	}
-	if err := saveQCOptions(&QCOptions{QCFilePath: us.FilePath}); err != nil {
+	if err := saveQCOptions(&QCOptions{QCFilePath: us.FilePath, QCLanguage: us.Language}); err != nil {
 		logger.Errorw("saveUserSettings: error saving QC options", "error", err)
 		return err
 	}
@@ -242,5 +263,8 @@ func validateSaveData(us *UserSettings) error {
 	if !strings.Contains(us.FilePath, "QuakeChampions.exe") {
 		return errors.New("Invalid QC EXE was specified")
 	}
-	return newLauncherClient(10).verifyCredentials(us.Username, us.Password)
+	if us.Language == "" {
+		return errors.New("QC language must be specified")
+	}
+	return newLauncherClient(defTimeout).verifyCredentials(us.Username, us.Password)
 }
