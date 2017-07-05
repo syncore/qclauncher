@@ -78,8 +78,6 @@ func Launch() error {
 	}
 	logger.Debugw("Game code", "gameCode.GameCode", gameCode.Gamecode)
 	finalArgs := strings.Replace(exArgs, gameCodeTempl, gameCode.Gamecode, -1)
-	logger.Debugw("Final arguments", "finalArgs", finalArgs)
-	logger.Debug("Launching....")
 	return runQC(qcOpts.QCFilePath, finalArgs)
 }
 
@@ -397,16 +395,22 @@ func formatUnexpectedResponse(event string) error {
 func runQC(qcPath, qcArgs string) error {
 	qc := exec.Command(qcPath)
 	qc.Dir = filepath.Dir(qcPath)
-	a := qcArgs
+	allArgs := []string{qcArgs}
 	if ConfAppendCustomArgs != "" {
-		a = fmt.Sprintf("%s %s", qcArgs, ConfAppendCustomArgs)
+		allArgs = append(allArgs, ConfAppendCustomArgs)
 	}
+	if ConfMaxFPS != 0 {
+		allArgs = append(allArgs, fmt.Sprintf("--set /Config/CONFIG/maxFpsValue %d", ConfMaxFPS))
+	}
+	a := strings.Join(allArgs, " ")
+	logger.Debugf("Final arguments: %s", a)
 	// Handle arg quote-escaping manually (see golang issue #15566)
 	qc.SysProcAttr = &syscall.SysProcAttr{
 		HideWindow:    false,
 		CmdLine:       fmt.Sprintf(` %s`, a),
 		CreationFlags: 0,
 	}
+	logger.Debug("Launching....")
 	if err := qc.Start(); err != nil {
 		logger.Errorw("runQC: error starting QC", "error", err)
 		return err

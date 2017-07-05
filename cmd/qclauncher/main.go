@@ -26,6 +26,7 @@ func init() {
 	flag.Int64Var(&qclauncher.ConfUpdateInterval, "updateinterval", 86400, "Time in seconds between checking for launcher updates") // 24 hours (86400)
 	flag.BoolVar(&qclauncher.ConfSkipUpdates, "skipupdates", false, "Skip checking for QC and launcher updates")
 	flag.BoolVar(&qclauncher.ConfEnforceHash, "enforcehash", true, "Enforce QC game hash checking (disabling is not recommended)")
+	flag.IntVar(&qclauncher.ConfMaxFPS, "maxfps", 0, "Max value to limit FPS to (experimental)")
 }
 
 func main() {

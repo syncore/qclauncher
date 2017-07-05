@@ -16,7 +16,7 @@ const (
 	bDefBase   = "buildinfo.cdp.bethesda.net"
 	sDefBase   = "services.bethesda.net"
 	defTimeout = 10
-	version    = 1.01
+	version    = 1.02
 )
 
 var (
@@ -29,6 +29,7 @@ var (
 	ConfUpdateInterval   int64
 	ConfSkipUpdates      bool
 	ConfEnforceHash      bool
+	ConfMaxFPS           int
 	ConfBaseSvc          string
 	ConfBaseBi           string
 	ConfSrcFp            string

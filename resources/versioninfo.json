@@ -4,13 +4,13 @@
 		"FileVersion": {
 			"Major": 1,
 			"Minor": 0,
-			"Patch": 1,
+			"Patch": 2,
 			"Build": 0
 		},
 		"ProductVersion": {
 			"Major": 1,
 			"Minor": 0,
-			"Patch": 1,
+			"Patch": 2,
 			"Build": 0
 		},
 		"FileFlagsMask": "3f",
@@ -24,14 +24,14 @@
 		"Comments": "Quake Champions Launcher",
 		"CompanyName": "syncore",
 		"FileDescription": "Quake Champions Launcher",
-		"FileVersion": "1.01",
+		"FileVersion": "1.02",
 		"InternalName": "qclauncher",
 		"LegalCopyright": "© syncore, 2017",
 		"LegalTrademarks": "",
 		"OriginalFilename": "qclauncher.exe",
 		"PrivateBuild": "",
 		"ProductName": "QCLauncher",
-		"ProductVersion": "v1.0.1.0",
+		"ProductVersion": "v1.0.2.0",
 		"SpecialBuild": ""
 	},
 	"VarFileInfo":
