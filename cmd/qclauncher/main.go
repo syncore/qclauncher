@@ -11,7 +11,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
 
 	"github.com/syncore/qclauncher"
 )
@@ -27,6 +26,7 @@ func init() {
 	flag.BoolVar(&qclauncher.ConfSkipUpdates, "skipupdates", false, "Skip checking for QC and launcher updates")
 	flag.BoolVar(&qclauncher.ConfEnforceHash, "enforcehash", true, "Enforce QC game hash checking (disabling is not recommended)")
 	flag.IntVar(&qclauncher.ConfMaxFPS, "maxfps", 0, "Max value to limit FPS to (experimental)")
+	flag.BoolVar(&qclauncher.ConfShowMainWindow, "show", false, "Restore Start QCLauncher main UI window")
 }
 
 func main() {
@@ -36,35 +36,57 @@ func main() {
 }
 
 func execMain() {
-	mainLogger := qclauncher.NewLogger()
-	lmsg := fmt.Sprintf("An error occurred while executing the launch process. See %s for more information.", qclauncher.LogFile)
-	running, procs, err := qclauncher.IsProcessRunning("QuakeChampions.exe")
+	err := qclauncher.Lock.Lock()
+	if qclauncher.IsErrAlreadyRunning(err) {
+		qclauncher.ShowFatalErrorMsg("Error", fmt.Sprintf("%s If this is an error, delete the %s file and try again.",
+			err.Error(), qclauncher.Lock.Filename(false)), nil)
+		return
+	}
+	defer qclauncher.Lock.Unlock()
+	mainlogger := qclauncher.NewLogger()
+	running, _, _, _, namepids, err := qclauncher.IsProcessRunning(qclauncher.QCExe)
 	if err != nil {
-		mainLogger.Errorw("main: Error checking running processes.", "error", err)
-		qclauncher.ShowErrorMsg("Error", fmt.Sprintf("An error occurred while checking the running processes. See %s for more information.", qclauncher.LogFile))
+		mainlogger.Errorw(fmt.Sprintf("%s: error checking running processes", qclauncher.GetCaller()), "error", err)
+		qclauncher.ShowErrorMsg("Error", "Unable to enumerate processes to determine if Quake Champions is already running", nil)
 		return
 	}
 	if running {
-		qclauncher.ShowErrorMsg("Already running", fmt.Sprintf("The following are currently running: %s. Cannot continue. Exiting.", procs))
-		return
+		if willClose := qclauncher.ShowQCRunningMsg(namepids[qclauncher.QCExe]); !willClose {
+			qclauncher.ShowErrorMsg("Already running", "Please close Quake Champions and then re-run QCLauncher.", nil)
+			return
+		}
 	}
 	if !qclauncher.FileExists(qclauncher.GetDataFilePath()) {
-		qclauncher.OpenSettings()
+		qclauncher.LoadUI(qclauncher.GetEmptyConfiguration())
 		return
 	}
-	if qclauncher.ConfSkipUpdates {
+	cfg, err := qclauncher.GetConfiguration()
+	if err != nil {
+		qclauncher.ShowErrorMsg("Error", "An error occurred when retrieving your settings. Reseting.", nil)
+		qclauncher.DeleteConfiguration(false)
+		qclauncher.LoadUI(qclauncher.GetEmptyConfiguration())
+		return
+	}
+	if !qclauncher.ConfSkipUpdates {
+		// param of type UpdateLauncher to this call throws no error
+		_ = qclauncher.CheckUpdate(qclauncher.ConfEnforceHash, qclauncher.UpdateLauncher)
+	}
+	if qclauncher.ConfShowMainWindow {
+		qclauncher.LoadUI(cfg)
+		return
+	}
+	if cfg.Launcher.AutoStartQC {
 		if err := qclauncher.Launch(); err != nil {
-			mainLogger.Errorw("main: Error occurred while executing the launch process.", "error", err)
-			qclauncher.ShowErrorMsg("Error", lmsg)
-			os.Exit(1)
+			mainlogger.Errorw(fmt.Sprintf("%s: %s", qclauncher.GetCaller(), "error occurred while executing the launch process."),
+				"error", err)
+			if qclauncher.IsErrAlreadyRunning(err) || qclauncher.IsErrHashMismatch(err) || qclauncher.IsErrAuthFailed(err) {
+				qclauncher.ShowErrorMsg("Error", err.Error(), nil)
+			} else {
+				qclauncher.ShowErrorMsg("Error", qclauncher.UILaunchErrorMsg, nil)
+			}
+			qclauncher.Exit(1)
 		}
 		return
 	}
-	if qclauncher.Update(qclauncher.ConfEnforceHash) {
-		if err := qclauncher.Launch(); err != nil {
-			mainLogger.Errorw("main: Error occurred while executing the launch process.", "error", err)
-			qclauncher.ShowErrorMsg("Error", lmsg)
-			os.Exit(1)
-		}
-	}
+	qclauncher.LoadUI(cfg)
 }

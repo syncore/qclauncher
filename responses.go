@@ -6,6 +6,7 @@ package qclauncher
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -168,11 +169,16 @@ type ServerStatusResponse struct {
 	} `json:"platform"`
 }
 
+type FileHash struct {
+	File string `json:"file"`
+	Hash string `json:"hash"`
+}
+
 type UpdateQCResponse struct {
-	ID   int       `json:"id"`
-	Date time.Time `json:"date"`
-	Hash string    `json:"hash"`
-	BVer string    `json:"bver"`
+	ID     int        `json:"id"`
+	Date   time.Time  `json:"date"`
+	Hashes []FileHash `json:"hashes"`
+	BVer   string     `json:"bver"`
 }
 
 type UpdateLauncherResponse struct {
@@ -183,11 +189,11 @@ type UpdateLauncherResponse struct {
 
 func (response *AuthResponse) parse(j json.RawMessage) error {
 	if err := json.Unmarshal(j, response); err != nil {
-		logger.Errorw("AuthResponse.parse: error parsing raw response message", "error", err, "data", string(j))
+		logger.Errorw(fmt.Sprintf("%s: error parsing raw auth response message", GetCaller()), "error", err, "data", string(j))
 		return err
 	}
 	if err := updateAuthToken(response.isPreSaveVerification, response.Token); err != nil {
-		logger.Errorw("AuthResponse.parse: error updating auth token from response", "error", err, "data", response.Token)
+		logger.Errorw(fmt.Sprintf("%s: error updating auth token from response", GetCaller()), "error", err, "data", response.Token)
 		return err
 	}
 	return nil
@@ -195,11 +201,11 @@ func (response *AuthResponse) parse(j json.RawMessage) error {
 
 func (response *BuildInfoResponse) parse(j json.RawMessage) error {
 	if err := json.Unmarshal(j, response); err != nil {
-		logger.Errorw("BuildInfoResponse.parse: error parsing raw response message", "error", err, "data", string(j))
+		logger.Errorw(fmt.Sprintf("%s: error parsing raw build info response message", GetCaller()), "error", err, "data", string(j))
 		return err
 	}
 	if err := validateResponse(response); err != nil {
-		logger.Errorw("BuildInfoResponse.parse: response failed validation", "error", err, "data", response)
+		logger.Errorw(fmt.Sprintf("%s: build info response failed validation", GetCaller()), "error", err, "data", response)
 		return err
 	}
 	return nil
@@ -207,11 +213,11 @@ func (response *BuildInfoResponse) parse(j json.RawMessage) error {
 
 func (response *BranchInfoResponse) parse(j json.RawMessage) error {
 	if err := json.Unmarshal(j, response); err != nil {
-		logger.Errorw("BranchInfoResponse.parse: error parsing raw response message", "error", err, "data", string(j))
+		logger.Errorw(fmt.Sprintf("%s: error parsing raw branch info response message", GetCaller()), "error", err, "data", string(j))
 		return err
 	}
 	if err := validateResponse(response); err != nil {
-		logger.Errorw("BranchInfoResponse.parse: response failed validation", "error", err, "data", response)
+		logger.Errorw(fmt.Sprintf("%s: branch info response failed validation", GetCaller()), "error", err, "data", response)
 		return err
 	}
 	return nil
@@ -219,11 +225,11 @@ func (response *BranchInfoResponse) parse(j json.RawMessage) error {
 
 func (response *LaunchArgsResponse) parse(j json.RawMessage) error {
 	if err := json.Unmarshal(j, response); err != nil {
-		logger.Errorw("LaunchArgsResponse.parse: error parsing raw response message", "error", err, "data", string(j))
+		logger.Errorw(fmt.Sprintf("%s: error parsing raw launch args response message", GetCaller()), "error", err, "data", string(j))
 		return err
 	}
 	if err := validateResponse(response); err != nil {
-		logger.Errorw("LaunchArgsResponse.parse: response failed validation", "error", err, "data", response)
+		logger.Errorw(fmt.Sprintf("%s: launch args response failed validation", GetCaller()), "error", err, "data", response)
 		return err
 	}
 	return nil
@@ -231,11 +237,11 @@ func (response *LaunchArgsResponse) parse(j json.RawMessage) error {
 
 func (response *GameCodeResponse) parse(j json.RawMessage) error {
 	if err := json.Unmarshal(j, response); err != nil {
-		logger.Errorw("GameCodeResponse.parse: error parsing raw response message", "error", err, "data", string(j))
+		logger.Errorw(fmt.Sprintf("%s: error parsing raw game code response message", GetCaller()), "error", err, "data", string(j))
 		return err
 	}
 	if err := validateResponse(response); err != nil {
-		logger.Errorw("GameCodeResponse.parse: response failed validation", "error", err, "data", response)
+		logger.Errorw(fmt.Sprintf("%s: game code response failed validation", GetCaller()), "error", err, "data", response)
 		return err
 	}
 	return nil
@@ -243,11 +249,11 @@ func (response *GameCodeResponse) parse(j json.RawMessage) error {
 
 func (response *ServerStatusResponse) parse(j json.RawMessage) error {
 	if err := json.Unmarshal(j, response); err != nil {
-		logger.Errorw("ServerStatusResponse.parse: error parsing raw response message", "error", err, "data", string(j))
+		logger.Errorw(fmt.Sprintf("%s: error parsing raw server status response message", GetCaller()), "error", err, "data", string(j))
 		return err
 	}
 	if err := validateResponse(response); err != nil {
-		logger.Errorw("ServerStatusResponse.parse: response failed validation", "error", err, "data", response)
+		logger.Errorw(fmt.Sprintf("%s: server status response failed validation", GetCaller()), "error", err, "data", response)
 		return err
 	}
 	return nil
@@ -255,11 +261,11 @@ func (response *ServerStatusResponse) parse(j json.RawMessage) error {
 
 func (response *UpdateQCResponse) parse(j json.RawMessage) error {
 	if err := json.Unmarshal(j, response); err != nil {
-		logger.Errorw("UpdateQCResponse.parse: error parsing raw response message", "error", err, "data", string(j))
+		logger.Errorw(fmt.Sprintf("%s: error parsing raw QC update response message", GetCaller()), "error", err, "data", string(j))
 		return err
 	}
 	if err := validateResponse(response); err != nil {
-		logger.Errorw("UpdateQCResponse.parse: response failed validation", "error", err, "data", response)
+		logger.Errorw(fmt.Sprintf("%s: QC update response failed validation", GetCaller()), "error", err, "data", response)
 		return err
 	}
 	return nil
@@ -267,11 +273,11 @@ func (response *UpdateQCResponse) parse(j json.RawMessage) error {
 
 func (response *UpdateLauncherResponse) parse(j json.RawMessage) error {
 	if err := json.Unmarshal(j, response); err != nil {
-		logger.Errorw("UpdateLauncherResponse.parse: error parsing raw response message", "error", err, "data", string(j))
+		logger.Errorw(fmt.Sprintf("%s: error parsing raw launcher update response message", GetCaller()), "error", err, "data", string(j))
 		return err
 	}
 	if err := validateResponse(response); err != nil {
-		logger.Errorw("UpdateLauncherResponse.parse: response failed validation", "error", err, "data", response)
+		logger.Errorw(fmt.Sprintf("%s: launcher update response failed validation", GetCaller()), "error", err, "data", response)
 		return err
 	}
 	return nil
@@ -340,7 +346,7 @@ func parseRemoteResponseData(rd *remoteResponseData) (interface{}, error) {
 		}
 		return r, nil
 	default:
-		logger.Errorf("parseRemoteResponseData: received unknown response type: %v", rd.ResponseType)
+		logger.Error(fmt.Sprintf("%s: received unknown response type: %v", GetCaller(), rd.ResponseType))
 		return nil, errors.New("Unknown response type")
 	}
 }

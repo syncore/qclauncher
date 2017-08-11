@@ -9,14 +9,16 @@ import (
 )
 
 const (
-	LogFile    = "qclauncher.log"
-	DataFile   = "data.qcl"
-	XAppDefVer = "1.20.5"
-	XLibDefVer = "1.20.5"
-	bDefBase   = "buildinfo.cdp.bethesda.net"
-	sDefBase   = "services.bethesda.net"
-	defTimeout = 10
-	version    = 1.02
+	LogFile            = "qclauncher.log"
+	DataFile           = "data.qcl"
+	LockFile           = "qcl.lock"
+	ShowMainWindowFlag = "show"
+	XAppDefVer         = "1.21.7"
+	XLibDefVer         = "1.21.7"
+	bDefBase           = "buildinfo.cdp.bethesda.net"
+	sDefBase           = "services.bethesda.net"
+	defTimeout         = 10
+	version            = 1.03
 )
 
 var (
@@ -33,10 +35,13 @@ var (
 	ConfBaseSvc          string
 	ConfBaseBi           string
 	ConfSrcFp            string
+	ConfShowMainWindow   bool
+	Lock                 *Single
 )
 
 func Setup() {
 	setLogger()
+	setLock()
 	setBaseAddr()
 	setSrcFp()
 	setVersionInfo()
@@ -52,6 +57,12 @@ func setBaseAddr() {
 		ConfBaseBi, ConfBaseSvc = addr, addr
 	} else {
 		ConfBaseBi, ConfBaseSvc = fmt.Sprintf("https://%s", bDefBase), fmt.Sprintf("https://%s", sDefBase)
+	}
+}
+
+func setLock() {
+	if Lock == nil {
+		Lock = NewSingle(LockFile)
 	}
 }
 

@@ -6,7 +6,7 @@ package qclauncher
 import "fmt"
 
 const (
-	updateQCEndpoint       = "https://qc.syncore.org/launcher/checkforupdate"
+	updateQCEndpoint       = "https://qc.syncore.org/launcher/v2/checkforupdate"
 	updateLauncherEndpoint = "https://qc.syncore.org/qcl_latest_version.json"
 )
 

@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -16,12 +17,21 @@ import (
 	ps "github.com/keybase/go-ps"
 )
 
-func IsProcessRunning(processNames ...string) (bool, string, error) {
+// Single provides a mechanism to ensure that only one instance of a program is running
+// https://github.com/WeltN24/single
+type Single struct {
+	name   string
+	file   *os.File
+	Locked bool
+}
+
+func IsProcessRunning(processNames ...string) (bool, string, int, []string, map[string]int, error) {
+	var pfilenames []string
+	namepid := make(map[string]int)
 	runningProcesses, err := ps.Processes()
 	if err != nil {
-		return false, "", fmt.Errorf("Error enumerating processes: %s", err)
+		return false, "", 0, pfilenames, namepid, fmt.Errorf("Error enumerating processes: %s", err)
 	}
-	var results []string
 	found := false
 	for _, rp := range runningProcesses {
 		for _, pn := range processNames {
@@ -29,11 +39,26 @@ func IsProcessRunning(processNames ...string) (bool, string, error) {
 				continue
 			}
 			found = true
-			results = append(results, pn)
+			pfilenames = append(pfilenames, pn)
+			if _, ok := namepid[pn]; !ok {
+				namepid[pn] = rp.Pid()
+			}
 			break
 		}
 	}
-	return found, strings.Join(results, ", "), nil
+	return found, strings.Join(pfilenames, ", "), len(pfilenames), pfilenames, namepid, nil
+}
+
+func GetCaller() string {
+	pc := make([]uintptr, 1)
+	runtime.Callers(2, pc)
+	f := runtime.FuncForPC(pc[0])
+	fnName := f.Name()
+	i := strings.LastIndex(fnName, ".")
+	if i != -1 {
+		return fnName[i+1:]
+	}
+	return fnName
 }
 
 func FileExists(name string) bool {
@@ -43,6 +68,62 @@ func FileExists(name string) bool {
 		}
 	}
 	return true
+}
+
+func DeleteFile(filepath string) error {
+	if !FileExists(filepath) {
+		return os.ErrNotExist
+	}
+	err := os.Remove(filepath)
+	if err != nil {
+		return fmt.Errorf("Error deleting file: %s", err)
+	}
+	return nil
+}
+
+func NewSingle(name string) *Single {
+	return &Single{name: name, Locked: false}
+}
+
+func (s *Single) Wait() {
+	locked := true
+	for locked {
+		time.Sleep(time.Millisecond)
+		err := s.Lock()
+		locked = err != nil
+		if err == nil {
+			_ = s.Unlock()
+		}
+	}
+}
+
+func (s *Single) Filename(useFullPath bool) string {
+	if useFullPath {
+		return filepath.Join(getExecutingPath(), s.name)
+	}
+	return fmt.Sprintf(s.name)
+}
+
+func (s *Single) Lock() error {
+	if err := os.Remove(s.Filename(true)); err != nil && !os.IsNotExist(err) {
+		return &alreadyRunningError{emsg: fmt.Sprintf("QCLauncher v%.2f is already running.", version)}
+	}
+	file, err := os.OpenFile(s.Filename(true), os.O_EXCL|os.O_CREATE, 0600)
+	if err != nil {
+		return err
+	}
+	s.file = file
+	return nil
+}
+
+func (s *Single) Unlock() error {
+	if err := s.file.Close(); err != nil {
+		return err
+	}
+	if err := os.Remove(s.Filename(true)); err != nil {
+		return err
+	}
+	return nil
 }
 
 func getExecutingPath() string {

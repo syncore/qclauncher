@@ -1,0 +1,25 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "oQd6YYmbrF01BkK5gSIkZPokWTg=",
+			"path": "github.com/lxn/walk",
+			"revision": "d9d80285200c3ff03573c4de789a696e226f3a30",
+			"revisionTime": "2017-08-03T08:56:13Z"
+		},
+		{
+			"checksumSHA1": "TZqFk+JvnioxMfb/RnqnW6Jc+IY=",
+			"path": "github.com/lxn/walk/declarative",
+			"revision": "d9d80285200c3ff03573c4de789a696e226f3a30",
+			"revisionTime": "2017-08-03T08:56:13Z"
+		},
+		{
+			"checksumSHA1": "CjgeQgbEzyQ2vgrrDBLBqT+z8T0=",
+			"path": "github.com/lxn/win",
+			"revision": "aa5a1207ac5e8772fd6164f4f99e9cd7040a4b67",
+			"revisionTime": "2017-08-03T08:52:42Z"
+		}
+	],
+	"rootPath": "github.com/syncore/qclauncher"
+}

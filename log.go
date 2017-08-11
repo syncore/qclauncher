@@ -10,9 +10,13 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-var logger *log.SugaredLogger
+type qlogger struct {
+	*log.SugaredLogger
+}
 
-func NewLogger() *log.SugaredLogger {
+var logger *qlogger
+
+func NewLogger() *qlogger {
 	logCfg := log.NewProductionConfig()
 	logCfg.OutputPaths = []string{getLogFilePath()}
 	logCfg.Encoding = "json"
@@ -33,7 +37,12 @@ func NewLogger() *log.SugaredLogger {
 		panic(fmt.Errorf("Could not initialize structured logger, error: %s", err))
 	}
 	defer lgr.Sync()
-	return lgr.Sugar()
+	return &qlogger{lgr.Sugar()}
+}
+
+func (l *qlogger) FatalUIw(msg string, keysAndValues ...interface{}) {
+	l.Errorw(msg, keysAndValues)
+	exitFromUI()
 }
 
 func setLogger() {

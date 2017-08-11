@@ -4,6 +4,8 @@
 package qclauncher
 
 import (
+	"fmt"
+
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -33,18 +35,19 @@ type authRequest struct {
 }
 
 func (r *authRequest) build(addr string) error {
-	creds, err := getUserCredentials()
+	cfg, err := GetConfiguration()
 	if err != nil {
-		logger.Errorw("authRequest.build: error getting user credentials", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error getting configuration for credential lookup when building auth request",
+			GetCaller()), "error", err)
 		return err
 	}
-	r.Username = creds.Username
-	r.Password = creds.Password
+	r.Username = cfg.Core.Username
+	r.Password = cfg.Core.Password
 	r.SessionID = uuid.NewV4().String()
 	header := &requestHeaderAuth{}
 	err = header.build()
 	if err != nil {
-		logger.Errorw("authRequest.build: error getting headers", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error getting auth request headers", GetCaller()), "error", err)
 		return err
 	}
 	r.params = &requestParams{
@@ -79,7 +82,7 @@ func (r *verifyRequest) build(addr string) error {
 	header := &requestHeaderVerify{}
 	err := header.build()
 	if err != nil {
-		logger.Errorw("verifyRequest.build: error getting headers", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error getting verify request headers", GetCaller()), "error", err)
 		return err
 	}
 	r.params = &requestParams{header: header.values, endpointAddr: addr}
@@ -110,7 +113,7 @@ func (r *buildInfoRequest) build(addr string) error {
 	header := &requestHeaderBuildInfo{}
 	err := header.build()
 	if err != nil {
-		logger.Errorw("buildInfoRequest.build: error getting headers", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error getting build info request headers", GetCaller()), "error", err)
 		return err
 	}
 	r.params = &requestParams{header: header.values, endpointAddr: addr}
@@ -146,7 +149,8 @@ func (r *preSaveVerifyRequest) build(addr string) error {
 	header := &requestHeaderAuth{}
 	err := header.build()
 	if err != nil {
-		logger.Errorw("preSaveVerifyRequest.build: error getting headers", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error getting pre-save auth verification request headers",
+			GetCaller()), "error", err)
 		return err
 	}
 	r.params = &requestParams{
@@ -179,7 +183,7 @@ func (r *branchInfoRequest) build(addr string) error {
 	header := &requestHeaderBranchInfo{}
 	err := header.build()
 	if err != nil {
-		logger.Errorw("branchInfoRequest.build: error getting headers", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error getting branch info request headers", GetCaller()), "error", err)
 		return err
 	}
 	r.params = &requestParams{header: header.values, endpointAddr: addr}
@@ -210,7 +214,7 @@ func (r *launchArgsRequest) build(addr string) error {
 	header := &requestHeaderLaunchArgs{}
 	err := header.build()
 	if err != nil {
-		logger.Errorw("launchArgsRequest.build: error getting headers", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error getting launch args request headers", GetCaller()), "error", err)
 		return err
 	}
 	r.params = &requestParams{header: header.values, endpointAddr: addr}
@@ -241,7 +245,7 @@ func (r *gameCodeRequest) build(addr string) error {
 	header := &requestHeaderGameCode{}
 	err := header.build()
 	if err != nil {
-		logger.Errorw("gameCodeRequest.build: error getting headers", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error getting game code request headers", GetCaller()), "error", err)
 		return err
 	}
 	r.params = &requestParams{header: header.values, endpointAddr: addr}
@@ -272,7 +276,7 @@ func (r *serverStatusRequest) build(addr string) error {
 	header := &requestHeaderServerStatus{}
 	err := header.build()
 	if err != nil {
-		logger.Errorw("serverStatusRequest.build: error getting headers", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error getting server status request headers", GetCaller()), "error", err)
 		return err
 	}
 	r.params = &requestParams{header: header.values, endpointAddr: addr}
@@ -303,7 +307,7 @@ func (r *updateQCRequest) build(addr string) error {
 	header := &requestHeaderUpdateQC{}
 	err := header.build()
 	if err != nil {
-		logger.Errorw("updateQCRequest.build: error getting headers", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error getting QC update request headers", GetCaller()), "error", err)
 		return err
 	}
 	r.params = &requestParams{header: header.values, endpointAddr: addr}
@@ -334,7 +338,7 @@ func (r *updateLauncherRequest) build(addr string) error {
 	header := &requestHeaderUpdateLauncher{}
 	err := header.build()
 	if err != nil {
-		logger.Errorw("updateLauncherRequest.build: error getting headers", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error getting launcher update request headers", GetCaller()), "error", err)
 		return err
 	}
 	r.params = &requestParams{header: header.values, endpointAddr: addr}

@@ -19,6 +19,7 @@ const (
 	hkeyXCdpLibVer             = "x-cdp-lib-ver"
 	hkeyXCdpPlatform           = "x-cdp-platform"
 	hkeyXSrcFp                 = "x-src-fp"
+	hkeyLVer                   = "lver"
 	hvalServicesHost           = "services.bethesda.net"
 	hvalBuildHost              = "buildinfo.cdp.bethesda.net"
 	hvalAcceptAll              = "*/*"
@@ -39,7 +40,7 @@ var (
 		hkeyXCdpApp:      hvalXCdpApp,
 		hkeyXCdpPlatform: hvalXCdpPlatform,
 	}
-	genericExtraHeaders = localRequestExtraHeaders{xcdp: false, auth: false}
+	genericExtraHeaders = localRequestExtraHeaders{xcdp: false, auth: false, launcher: false}
 )
 
 type localRequestHeader interface {
@@ -53,8 +54,9 @@ type headerMapping struct {
 }
 
 type localRequestExtraHeaders struct {
-	xcdp bool
-	auth bool
+	xcdp     bool
+	auth     bool
+	launcher bool
 }
 
 type requestHeaderAuth struct{ headerMapping }
@@ -70,7 +72,7 @@ type requestHeaderUpdateLauncher struct{ headerMapping }
 func (h *requestHeaderAuth) build() error {
 	headers, err := getAll(h)
 	if err != nil {
-		logger.Errorw("requestHeaderAuth.build: error building header", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error building auth header", GetCaller()), "error", err)
 		return err
 	}
 	h.headerMapping = headers
@@ -78,7 +80,7 @@ func (h *requestHeaderAuth) build() error {
 }
 
 func (h requestHeaderAuth) getExtra() localRequestExtraHeaders {
-	return localRequestExtraHeaders{xcdp: true, auth: false}
+	return localRequestExtraHeaders{xcdp: true, auth: false, launcher: false}
 }
 
 func (h requestHeaderAuth) getBase() (headers map[string][]string) {
@@ -94,7 +96,7 @@ func (h requestHeaderAuth) getBase() (headers map[string][]string) {
 func (h *requestHeaderVerify) build() error {
 	headers, err := getAll(h)
 	if err != nil {
-		logger.Errorw("requestHeaderVerify.build: error building header", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error building verify header", GetCaller()), "error", err)
 		return err
 	}
 	h.headerMapping = headers
@@ -102,7 +104,7 @@ func (h *requestHeaderVerify) build() error {
 }
 
 func (h requestHeaderVerify) getExtra() localRequestExtraHeaders {
-	return localRequestExtraHeaders{xcdp: true, auth: true}
+	return localRequestExtraHeaders{xcdp: true, auth: true, launcher: false}
 }
 
 func (h requestHeaderVerify) getBase() (headers map[string][]string) {
@@ -118,7 +120,7 @@ func (h requestHeaderVerify) getBase() (headers map[string][]string) {
 func (h *requestHeaderBuildInfo) build() error {
 	headers, err := getAll(h)
 	if err != nil {
-		logger.Errorw("requestHeaderBuildInfo.build: error building header", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error building build info header", GetCaller()), "error", err)
 		return err
 	}
 	h.headerMapping = headers
@@ -136,7 +138,7 @@ func (h requestHeaderBuildInfo) getExtra() localRequestExtraHeaders {
 func (h *requestHeaderBranchInfo) build() error {
 	headers, err := getAll(h)
 	if err != nil {
-		logger.Errorw("requestHeaderBranchInfo.build: error building header", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error building branch info header", GetCaller()), "error", err)
 		return err
 	}
 	h.headerMapping = headers
@@ -154,7 +156,7 @@ func (h requestHeaderBranchInfo) getExtra() localRequestExtraHeaders {
 func (h *requestHeaderLaunchArgs) build() error {
 	headers, err := getAll(h)
 	if err != nil {
-		logger.Errorw("requestHeaderLaunchArgs.build: error building header", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error building launch args header", GetCaller()), "error", err)
 		return err
 	}
 	h.headerMapping = headers
@@ -172,7 +174,7 @@ func (h requestHeaderLaunchArgs) getExtra() localRequestExtraHeaders {
 func (h *requestHeaderGameCode) build() error {
 	headers, err := getAll(h)
 	if err != nil {
-		logger.Errorw("requestHeaderGameCode.build: error building header", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error building game code header", GetCaller()), "error", err)
 		return err
 	}
 	h.headerMapping = headers
@@ -189,23 +191,31 @@ func (h requestHeaderGameCode) getBase() (headers map[string][]string) {
 }
 
 func (h *requestHeaderGameCode) getExtra() localRequestExtraHeaders {
-	return localRequestExtraHeaders{xcdp: true, auth: true}
+	return localRequestExtraHeaders{xcdp: true, auth: true, launcher: false}
 }
 
 func (h *requestHeaderUpdateQC) build() error {
 	headers, err := getAll(h)
 	if err != nil {
-		logger.Errorw("requestHeaderUpdateQC.build: error building header", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error building qc update header", GetCaller()), "error", err)
 		return err
 	}
 	h.headerMapping = headers
 	return nil
 }
 
+func (h requestHeaderUpdateQC) getBase() (headers map[string][]string) {
+	return map[string][]string{}
+}
+
+func (h requestHeaderUpdateQC) getExtra() localRequestExtraHeaders {
+	return localRequestExtraHeaders{xcdp: false, auth: false, launcher: true}
+}
+
 func (h *requestHeaderServerStatus) build() error {
 	headers, err := getAll(h)
 	if err != nil {
-		logger.Errorw("requestHeaderServerStatus.build: error building header", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error building server status header", GetCaller()), "error", err)
 		return err
 	}
 	h.headerMapping = headers
@@ -225,18 +235,10 @@ func (h requestHeaderServerStatus) getExtra() localRequestExtraHeaders {
 	return genericExtraHeaders
 }
 
-func (h requestHeaderUpdateQC) getBase() (headers map[string][]string) {
-	return map[string][]string{}
-}
-
-func (h requestHeaderUpdateQC) getExtra() localRequestExtraHeaders {
-	return genericExtraHeaders
-}
-
 func (h *requestHeaderUpdateLauncher) build() error {
 	headers, err := getAll(h)
 	if err != nil {
-		logger.Errorw("requestHeaderUpdateLauncher.build: error building header", "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error building launcher update header", GetCaller()), "error", err)
 		return err
 	}
 	h.headerMapping = headers
@@ -248,7 +250,7 @@ func (h requestHeaderUpdateLauncher) getBase() (headers map[string][]string) {
 }
 
 func (h requestHeaderUpdateLauncher) getExtra() localRequestExtraHeaders {
-	return genericExtraHeaders
+	return localRequestExtraHeaders{xcdp: false, auth: false, launcher: true}
 }
 
 func getAll(h localRequestHeader) (headerMapping, error) {
@@ -264,11 +266,16 @@ func getAll(h localRequestHeader) (headerMapping, error) {
 		all[hkeyXCdpLibVer] = []string{ConfXLibVer}
 	}
 	if e.auth {
-		authToken, err := getAuthToken()
+		cfg, err := GetConfiguration()
 		if err != nil {
-			return headerMapping{}, fmt.Errorf("Unable to get auth token when building headers, error: %s", err)
+			logger.Errorw(fmt.Sprintf("%s: error getting configuration for token lookup when getting all request headers",
+				GetCaller()), "error", err)
+			return headerMapping{}, err
 		}
-		all[hkeyAuthorization] = []string{fmt.Sprintf("Token %s", authToken)}
+		all[hkeyAuthorization] = []string{fmt.Sprintf("Token %s", cfg.Auth.Token)}
+	}
+	if e.launcher {
+		all[hkeyLVer] = []string{fmt.Sprintf("v%.2f", version)}
 	}
 	return headerMapping{values: all}, nil
 }

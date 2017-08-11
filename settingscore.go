@@ -1,0 +1,160 @@
+// QCLauncher by syncore <syncore@syncore.org> 2017
+// https://github.com/syncore/qclauncher
+
+package qclauncher
+
+import (
+	"bytes"
+	"encoding/gob"
+	"errors"
+	"fmt"
+	"strings"
+
+	"github.com/boltdb/bolt"
+)
+
+type QCCoreSettings struct {
+	Username string
+	Password string
+	FilePath string
+	Language string
+}
+
+func (s *QCCoreSettings) get(ls *LauncherStore) error {
+	ls.checkDataFile(false)
+	if err := ls.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(bucketSettings))
+		decerr := s.decode(b.Get([]byte(keyQCCoreSettings)), b.Get([]byte(keyTokenKey)))
+		if decerr != nil {
+			logger.Errorw(fmt.Sprintf("%s: error decoding QC core settings from datastore during get operation", GetCaller()),
+				"error", decerr)
+			return decerr
+		}
+		return nil
+	}); err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error getting QC core settings from datastore", GetCaller()), "error", err)
+		return nil
+	}
+	return nil
+}
+
+func (s *QCCoreSettings) save(ls *LauncherStore) error {
+	if err := ls.Update(func(tx *bolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists([]byte(bucketSettings))
+		if err != nil {
+			logger.Errorw(fmt.Sprintf("%s: error creating settings bucket in datastore during save operation",
+				GetCaller()), "error", err)
+			return err
+		}
+		encoded, err := s.encode()
+		if err != nil {
+			logger.Errorw(fmt.Sprintf("%s: error encoding QC core settings during datastore save operation", GetCaller()),
+				"error", err)
+			return err
+		}
+		err = b.Put([]byte(keyQCCoreSettings), encoded)
+		if err != nil {
+			logger.Errorw(fmt.Sprintf("%s: error saving encoded QC core settings to datastore", GetCaller()), "error", err)
+		}
+		err = b.Put([]byte(keyTokenKey), *tmpKey)
+		if err != nil {
+			logger.Errorw(fmt.Sprintf("%s: error saving credential key to datastore", GetCaller()), "error", err)
+			return err
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+	t := &TokenAuth{Token: tmpToken}
+	return t.save(ls)
+}
+
+func (s *QCCoreSettings) decode(data, key []byte) error {
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	err := dec.Decode(&s)
+	if err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error decoding QC core settings data", GetCaller()), "error", err)
+		return err
+	}
+	qcDecUser, err := decrypt(s.Username, &key)
+	if err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error decrypting username credential", GetCaller()), "error", err)
+		return err
+	}
+	qcDecPass, err := decrypt(s.Password, &key)
+	if err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error decrypting password credential", GetCaller()), "error", err)
+		return err
+	}
+	s.Username = qcDecUser
+	s.Password = qcDecPass
+	return nil
+}
+
+func (s *QCCoreSettings) encode() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	enc := gob.NewEncoder(buf)
+	encUser, err := encrypt(s.Username, tmpKey)
+	if err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error encrypting username credential", GetCaller()), "error", err)
+		return nil, err
+	}
+	encPass, err := encrypt(s.Password, tmpKey)
+	if err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error encrypting password credential", GetCaller()), "error", err)
+		return nil, err
+	}
+	s.Username = encUser
+	s.Password = encPass
+	err = enc.Encode(s)
+	if err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error encoding QC core settings data", GetCaller()), "error", err)
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func (s *QCCoreSettings) validate() error {
+	if s == nil {
+		return errors.New("QC Core setting info was not entered")
+	}
+	if s.Username == "" {
+		return errors.New("QC username must be specified")
+	}
+	if s.Password == "" {
+		return errors.New("QC password must be specified")
+	}
+	if s.FilePath == "" {
+		return errors.New("QC EXE location must be specified")
+	}
+	if !strings.Contains(strings.ToUpper(s.FilePath), strings.ToUpper(QCExe)) {
+		return errors.New("Invalid QC EXE was specified")
+	}
+	if s.Language == "" {
+		return errors.New("QC language must be specified")
+	}
+	return validateAccount(s.Username, s.Password)
+}
+
+func validateAccount(username, password string) error {
+	if !FileExists(GetDataFilePath()) {
+		return newLauncherClient(defTimeout).verifyCredentials(username, password)
+	}
+	cfg, err := GetConfiguration()
+	if err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error getting configuration during pre-save account validation",
+			GetCaller()), "error", err)
+		return newLauncherClient(defTimeout).verifyCredentials(username, password)
+	}
+	if cfg.Core.Username == username && cfg.Core.Password == password {
+		token := &TokenAuth{}
+		if err := Get(token); err != nil {
+			return newLauncherClient(defTimeout).verifyCredentials(username, password)
+		}
+		tmpKey = genKey()
+		tmpToken = token.Token
+		return nil
+	}
+	return newLauncherClient(defTimeout).verifyCredentials(username, password)
+}
