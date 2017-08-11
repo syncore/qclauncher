@@ -26,7 +26,7 @@ func init() {
 	flag.BoolVar(&qclauncher.ConfSkipUpdates, "skipupdates", false, "Skip checking for QC and launcher updates")
 	flag.BoolVar(&qclauncher.ConfEnforceHash, "enforcehash", true, "Enforce QC game hash checking (disabling is not recommended)")
 	flag.IntVar(&qclauncher.ConfMaxFPS, "maxfps", 0, "Max value to limit FPS to (experimental)")
-	flag.BoolVar(&qclauncher.ConfShowMainWindow, "show", false, "Restore Start QCLauncher main UI window")
+	flag.BoolVar(&qclauncher.ConfShowMainWindow, "show", false, "Restore the QCLauncher main UI window")
 }
 
 func main() {
@@ -62,7 +62,7 @@ func execMain() {
 	}
 	cfg, err := qclauncher.GetConfiguration()
 	if err != nil {
-		qclauncher.ShowErrorMsg("Error", "An error occurred when retrieving your settings. Reseting.", nil)
+		qclauncher.ShowErrorMsg("Error", "An error occurred when retrieving your settings. Resetting.", nil)
 		qclauncher.DeleteConfiguration(false)
 		qclauncher.LoadUI(qclauncher.GetEmptyConfiguration())
 		return
