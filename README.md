@@ -20,7 +20,7 @@ Why?
  - Easily add Quake Champions to Steam and use the Steam overlay until [official Steam support arrives.](http://www.pcgamer.com/quake-champions-will-run-through-steam-id-software-confirms/)
 
 ----------
-![Main window](resources/site/screenshot_1.png)
+![Main window](resources/site/screenshot.png)
 
 
 Download
