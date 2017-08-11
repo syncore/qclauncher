@@ -39,14 +39,13 @@ How to Use (Setup)
 
  1. Download the [latest release](https://github.com/syncore/qclauncher/releases) and extract the `qclauncher.exe` file from the zip file.
  2. Double click `qclauncher.exe` to run QCLauncher.
- 3. Enter the requested information. For the QC user name and password, this will be the same info used for the Bethesda launcher (or the Bethesda forums)
- 4. Click the "Select QC EXE" button to locate your Quake Champions exe file; by default, this will be located at: `C:\Program Files (x86)\Bethesda.net Launcher\games\client\bin\pc\QuakeChampions.exe`
- 5. Select the language you wish to use for Quake Champions.
- 6. *Steam (Optional)*: If you want to add Quake Champions as a non-Steam game, click the check box. When prompted, find and select `qclauncher.exe` in Steam to add it as a non-Steam game. You can rename it to Quake Champions if you want, so that name will be displayed in your friends list.
- 7. Click the 'Save' button. If successful, the launcher will exit. In the future, simply click the `qclauncher.exe` file to launch Quake Champions and play.
+ 3. Click the 'Configure' button and enter the requested information to configure your settings. For the QC user name and password, this will be the same info used for the Bethesda launcher (or the Bethesda forums).
+ 4. When selecting the QC exe, the default location is: `C:\Program Files (x86)\Bethesda.net Launcher\games\client\bin\pc\QuakeChampions.exe`
+ 5. *Steam (Optional)*: If you want to add Quake Champions as a non-Steam game, this can be done under the 'Launcher Settings' tab. Click the check box labeled 'Add as a non-Steam Game (for Steam overlay)'. After you save your settings, Steam will open. Find and select `qclauncher.exe` in Steam to add it as a non-Steam game. You can rename it to Quake Champions if you want, so that it will be displayed that way in your friends list.
+ 6. Click the 'Save All' button. If successful, you should be able to play by clicking the 'Play' button.
 
 
-Build from Source Code (you can skip this if you're not a programmer or don't plan on working on the code)
+Build from Source Code (you can skip this if you don't plan on working on the code)
 -------------
 
  1. Download and install the latest stable release of the Go Programming Language, which is [available here.](https://golang.org/dl/)
@@ -60,7 +59,7 @@ Build from Source Code (you can skip this if you're not a programmer or don't pl
 
 Is This Considered a Cheat?
 -------------
-Not to my knowledge. QCLauncher **does *NOT* touch or modify any game files or game code at all**. Any additional functionality that QCLauncher provides is derived from the game itself and the game's built-in commands. The tool is simply a very lightweight utility that launches the game. Use it if you'd like to, or not. I wrote it as a learning exercise in the [tradition](https://qlprism.syncore.org/) of [contributing](https://ql.syncore.org) to the Quake [community](https://qlprism.syncore.org/qlm/). It's open-source. Inspect the code and you will see that there is no funny business going on.
+No. QCLauncher **does *NOT* touch or modify any game files or game code at all**. Any additional functionality that QCLauncher provides is derived from the game itself and the game's built-in commands. The tool is simply a very lightweight utility that launches the game. Use it if you'd like to, or not. I wrote it as a learning exercise in the [tradition](https://qlprism.syncore.org/) of [contributing](https://ql.syncore.org) to the Quake [community](https://qlprism.syncore.org/qlm/). It's open-source. Inspect the code and you will see that there is no funny business going on.
 
 Issues, Contact Me, etc.
 -------------
