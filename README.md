@@ -8,16 +8,16 @@ What Is QCLauncher?
 
 QCLauncher is a small tool for [Quake Champions](https://www.quake.com). With it, you can launch Quake Champions *without running the Bethesda Launcher or having the Bethesda Launcher open*. QCLauncher has just 2 files, uses very few resources, and can be configured to immediately exit after launching the game. You can download it [here.](https://github.com/syncore/qclauncher/releases)
 
- :zap: **It is very important to recognize that QCLauncher does not entirely replace the Bethesda Launcher. Most importantly, you will still need the Bethesda Launcher to download any QC game updates** or to verify your game files if you need to do that. By default, QCLauncher will tell you when Quake Champions game updates are available and you will be unable to play if you do not have the latest version of Quake Champions from Bethesda.
+ :zap: **It is very important to recognize that QCLauncher does not entirely replace the Bethesda Launcher. Most importantly, if you are not using the [Early Access Steam version of QC](http://store.steampowered.com/app/611500/Quake_Champions/) you will still need the Bethesda Launcher to download any QC game updates** or to verify your game files if necessary. QCLauncher will tell you when Quake Champions game updates are available and you will be unable to play if you do not have the latest version of Quake Champions from Bethesda.
 
 Why?
 ----
-
  - The Bethesda Launcher:
 	 -  Is basically a [special version](https://bitbucket.org/chromiumembedded/cef) of the Chrome web browser that sits in the background while you play. Depending on your system, this may be heavy on resources for you.
 	 - May display [messages at inconvenient times](https://www.reddit.com/r/QuakeChampions/comments/6kffch/dear_bethesda_do_not_do_this/).
- - It is currently not possible to use the login screen in Quake Champions.
- - Easily add Quake Champions to Steam and use the Steam overlay until [official Steam support arrives.](http://www.pcgamer.com/quake-champions-will-run-through-steam-id-software-confirms/)
+ - Quickly and easily enable undocumented game options.
+ 
+ - Easily add Quake Champions to Steam and use the Steam overlay if you have not purchased the Quake Champions Early Access version through Steam.
 
 ----------
 ![Main window](resources/site/screenshot.png)
@@ -44,8 +44,15 @@ How to Use (Setup)
  5. *Steam (Optional)*: If you want to add Quake Champions as a non-Steam game, this can be done under the 'Launcher Settings' tab. Click the check box labeled 'Add as a non-Steam Game (for Steam overlay)'. After you save your settings, Steam will open. Find and select `qclauncher.exe` in Steam to add it as a non-Steam game. You can rename it to Quake Champions if you want, so that it will be displayed that way in your friends list.
  6. Click the 'Save All' button. If successful, you should be able to play by clicking the 'Play' button.
 
+New game options have been found since the last QCLauncher release, how can I try these new options?
+-------------
+Since version 1.01, it has been possible to pass custom Quake Champions start-up options to QCLauncher with the `--customargs` flag. For example, create a shortcut to  QCLauncher or start QCLauncher in this manner:
 
-Build from Source Code (you can skip this if you don't plan on working on the code)
+`qclauncher.exe --customargs="--set /Config/CONFIG/WeaponZScale -10 --set /Config/CONFIG/isLowResParticles 1"`
+
+QCLauncher will then pass these options to Quake Champions on launch.
+
+Developers: Build from Source Code (you can skip this if you don't plan on working on the code)
 -------------
 
  1. Download and install the latest stable release of the Go Programming Language, which is [available here.](https://golang.org/dl/)
@@ -57,7 +64,7 @@ Build from Source Code (you can skip this if you don't plan on working on the co
  7. *Linux* - To build, run `build.sh` (the application only runs on Windows, but can be built on Linux/OSX).
  8. If everything went well, you should have the `qclauncher.exe` file in the `bin` directory.
 
-Is This Considered a Cheat?
+Is QCLauncher Considered a Cheat?
 -------------
 No. QCLauncher **does *NOT* touch or modify any game files or game code at all**. Any additional functionality that QCLauncher provides is derived from the game itself and the game's built-in commands. The tool is simply a very lightweight utility that launches the game. Use it if you'd like to, or not. I wrote it as a learning exercise in the [tradition](https://qlprism.syncore.org/) of [contributing](https://ql.syncore.org) to the Quake [community](https://qlprism.syncore.org/qlm/). It's open-source. Inspect the code and you will see that there is no funny business going on.
 
