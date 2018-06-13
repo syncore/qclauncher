@@ -22,6 +22,7 @@ const (
 	rrServerStatus
 	rrUpdateQC
 	rrUpdateLauncher
+	rrEntitlementInfo
 )
 
 type remoteResponse interface {
@@ -49,7 +50,7 @@ type Branch struct {
 }
 
 type Depot struct {
-	Depot128282 DepotItem `json:"128282"`
+	Depot252298 DepotItem `json:"252298"`
 }
 
 type DepotItem struct {
@@ -73,8 +74,10 @@ type DepotItem struct {
 }
 
 type LaunchInfo struct {
-	Default LaunchInfoItem `json:"8"` // NOTE: fragile (?) may change in the future
-	Temp    LaunchInfoItem `json:"9"` // NOTE: fragile (?) may change in the future
+	Default         LaunchInfoItem `json:"8"`  // NOTE: Default is the only relevant item; fragile (?) may change in the future
+	BetaTemp        LaunchInfoItem `json:"9"`  // NOTE: fragile (?) may change in the future
+	TestMaxFPS      LaunchInfoItem `json:"10"` // NOTE: fragile (?) may change in the future
+	PTSArenaBackend LaunchInfoItem `json:"14"` // NOTE: fragile (?) may change in the future
 }
 
 type LaunchInfoItem struct {
@@ -107,51 +110,55 @@ type AuthResponse struct {
 	isPreSaveVerification bool        `json:"-"` // custom flag for internal launcher use
 }
 
-type BuildInfoResponse struct {
-	Projects []Project `json:"projects"`
-	Branches []Branch  `json:"branches"`
+type FileDiffContainer struct {
+	ID        int `json:"id"`
+	FromBuild int `json:"from_build"`
+	ToBuild   int `json:"to_build"`
+}
+
+type BranchBuildHistory struct {
+	ID          int    `json:"id"`
+	Description string `json:"description"`
 }
 
 type BranchInfoResponse struct {
-	StorageURL        string      `json:"storage_url"`
-	LaunchinfoList    []int       `json:"launchinfo_list"`
-	FileDiffBuildList []int       `json:"file_diff_build_list"`
-	Preload           bool        `json:"preload"`
-	PreloadOndeck     bool        `json:"preload_ondeck"`
-	Available         bool        `json:"available"`
-	BranchType        int         `json:"branch_type"`
-	DiffType          int         `json:"diff_type"`
-	Project           int         `json:"project"`
-	Name              string      `json:"name"`
-	OnDeckBuild       int         `json:"on_deck_build"`
-	DepotList         Depot       `json:"depot_list"`
-	Build             int         `json:"build"`
-	PreloadLiveTime   interface{} `json:"preload_live_time"`
+	StorageURL         string               `json:"storage_url"`
+	LaunchinfoList     []int                `json:"launchinfo_list"`
+	FileDiffBuildList  []int                `json:"file_diff_build_list"`
+	FileDiffContainers []FileDiffContainer  `json:"filediffcontainers"`
+	BuildHistory       []BranchBuildHistory `json:"build_history"`
+	Preload            bool                 `json:"preload"`
+	PreloadOndeck      bool                 `json:"preload_ondeck"`
+	Available          bool                 `json:"available"`
+	BranchType         int                  `json:"branch_type"`
+	DiffType           int                  `json:"diff_type"`
+	Project            int                  `json:"project"`
+	Name               string               `json:"name"`
+	OnDeckBuild        interface{}          `json:"on_deck_build"`
+	DepotList          Depot                `json:"depot_list"`
+	Build              int                  `json:"build"`
+	PreloadLiveTime    interface{}          `json:"preload_live_time"`
 }
 
 type LaunchArgsResponse struct {
-	CheckFilter       bool          `json:"check_filter"`
-	DefaultBranch     int           `json:"default_branch"`
-	DependencyList    []Dependency  `json:"dependency_list"`
-	EulaLink          string        `json:"eula_link"`
-	FirewallLabel     string        `json:"firewall_label"`
-	FirewallPath      string        `json:"firewall_path"`
-	HasOauthClientID  bool          `json:"has_oauth_client_id"`
-	IconLink          string        `json:"icon_link"`
-	IngamePurchases   bool          `json:"ingame_purchases"`
-	InstallFolder     string        `json:"install_folder"`
-	InstallRegistry   string        `json:"install_registry"`
-	IsTool            bool          `json:"is_tool"`
-	LaunchinfoSet     LaunchInfo    `json:"launchinfo_set"`
-	Motd              bool          `json:"motd"`
-	Name              string        `json:"name"`
-	PatchNotes        bool          `json:"patch_notes"`
-	RequireLatest     bool          `json:"require_latest"`
-	ServerStatus      bool          `json:"server_status"`
-	State             int           `json:"state"`
-	StorageList       []interface{} `json:"storage_list"`
-	SupportLink       string        `json:"support_link"`
-	VisibleIfNotOwned bool          `json:"visible_if_not_owned"`
+	CheckFilter      bool          `json:"check_filter"`
+	DefaultBranch    int           `json:"default_branch"`
+	DependencyList   []Dependency  `json:"dependency_list"`
+	EulaLink         string        `json:"eula_link"`
+	FirewallLabel    string        `json:"firewall_label"`
+	FirewallPath     string        `json:"firewall_path"`
+	HasOauthClientID bool          `json:"has_oauth_client_id"`
+	IconLink         string        `json:"icon_link"`
+	InstallFolder    string        `json:"install_folder"`
+	InstallRegistry  string        `json:"install_registry"`
+	LaunchinfoSet    LaunchInfo    `json:"launchinfo_set"`
+	Name             string        `json:"name"`
+	NewChunkFormat   bool          `json:"new_chunk_format"`
+	NewChunkDownload bool          `json:"new_chunk_download"`
+	RequireLatest    bool          `json:"require_latest"`
+	State            int           `json:"state"`
+	StorageList      []interface{} `json:"storage_list"`
+	SupportLink      string        `json:"support_link"`
 }
 
 type GameCodeResponse struct {
@@ -187,6 +194,53 @@ type UpdateLauncherResponse struct {
 	URL           string    `json:"url"`
 }
 
+type EntitlementInfoResponse struct {
+	Blacklist EntitlementBlacklist `json:"blacklist"`
+	Branches  []EntitlementBranch  `json:"branches"`
+	Projects  []EntitlementProject `json:"projects"`
+}
+
+type EntitlementBlacklist struct {
+	Branches []EntitlementBlacklistBranch  `json:"branches"`
+	Country  string                        `json:"country"`
+	IP       string                        `json:"ip"`
+	Projects []EntitlementBlacklistProject `json:"projects"`
+}
+
+type EntitlementBlacklistBranch struct {
+	Available  bool   `json:"available"`
+	BranchType int    `json:"branch_type"`
+	Build      int    `json:"build"`
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	Preload    bool   `json:"preload"`
+	Project    int    `json:"project"`
+}
+
+type EntitlementBlacklistProject struct {
+	ID int `json:"id"`
+}
+
+type EntitlementBranch struct {
+	Available  bool   `json:"available"`
+	BranchType int    `json:"branch_type"`
+	Build      int    `json:"build"`
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	Preload    bool   `json:"preload"`
+	Project    int    `json:"project"`
+}
+
+type EntitlementProject struct {
+	BeamClientKey    bool   `json:"beam_client_key"`
+	Buildinfo        bool   `json:"buildinfo"`
+	DefaultBranch    int    `json:"default_branch"`
+	ID               int    `json:"id"`
+	Name             string `json:"name"`
+	NewChunkDownload bool   `json:"new_chunk_download"`
+	NewChunkFormat   bool   `json:"new_chunk_format"`
+}
+
 func (response *AuthResponse) parse(j json.RawMessage) error {
 	if err := json.Unmarshal(j, response); err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error parsing raw auth response message", GetCaller()), "error", err, "data", string(j))
@@ -194,18 +248,6 @@ func (response *AuthResponse) parse(j json.RawMessage) error {
 	}
 	if err := updateAuthToken(response.isPreSaveVerification, response.Token); err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error updating auth token from response", GetCaller()), "error", err, "data", response.Token)
-		return err
-	}
-	return nil
-}
-
-func (response *BuildInfoResponse) parse(j json.RawMessage) error {
-	if err := json.Unmarshal(j, response); err != nil {
-		logger.Errorw(fmt.Sprintf("%s: error parsing raw build info response message", GetCaller()), "error", err, "data", string(j))
-		return err
-	}
-	if err := validateResponse(response); err != nil {
-		logger.Errorw(fmt.Sprintf("%s: build info response failed validation", GetCaller()), "error", err, "data", response)
 		return err
 	}
 	return nil
@@ -283,6 +325,18 @@ func (response *UpdateLauncherResponse) parse(j json.RawMessage) error {
 	return nil
 }
 
+func (response *EntitlementInfoResponse) parse(j json.RawMessage) error {
+	if err := json.Unmarshal(j, response); err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error parsing raw entitlement info response message", GetCaller()), "error", err, "data", string(j))
+		return err
+	}
+	if err := validateResponse(response); err != nil {
+		logger.Errorw(fmt.Sprintf("%s: entitlement info response failed validation", GetCaller()), "error", err, "data", response)
+		return err
+	}
+	return nil
+}
+
 // yeah, cyclomatic complexity and stuff...
 func parseRemoteResponseData(rd *remoteResponseData) (interface{}, error) {
 	switch rd.ResponseType {
@@ -296,8 +350,8 @@ func parseRemoteResponseData(rd *remoteResponseData) (interface{}, error) {
 			return nil, err
 		}
 		return r, nil
-	case rrBuildInfo:
-		var r BuildInfoResponse
+	case rrEntitlementInfo:
+		var r EntitlementInfoResponse
 		err := r.parse(rd.Data)
 		if err != nil {
 			return nil, err

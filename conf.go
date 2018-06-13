@@ -13,12 +13,12 @@ const (
 	DataFile           = "data.qcl"
 	LockFile           = "qcl.lock"
 	ShowMainWindowFlag = "show"
-	XAppDefVer         = "1.21.7"
-	XLibDefVer         = "1.21.7"
+	XAppDefVer         = "1.36.2"
+	XLibDefVer         = "1.36.2"
 	bDefBase           = "buildinfo.cdp.bethesda.net"
 	sDefBase           = "services.bethesda.net"
 	defTimeout         = 10
-	version            = 1.03
+	version            = 1.04
 )
 
 var (

@@ -87,7 +87,7 @@ func newQCCoreSettingsTab(qcCoreSettings *QCCoreSettings) *QCLSettingsTab {
 							qcFilePathDialog := &walk.FileDialog{}
 							qcFilePathDialog.Filter = "Quake Champions Exe File (QuakeChampions.exe)|QuakeChampions.exe*.*"
 							qcFilePathDialog.Title = "Select your QuakeChampions.exe file"
-							qcDefaultDir := "C:\\Program Files (x86)\\Bethesda.net Launcher\\games\\client\\bin\\pc"
+							qcDefaultDir := "C:\\Program Files (x86)\\Bethesda.net Launcher\\games\\quakechampions"
 							if dirExists(qcDefaultDir) {
 								qcFilePathDialog.InitialDirPath = qcDefaultDir
 							}

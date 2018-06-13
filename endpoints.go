@@ -26,8 +26,8 @@ func getGameCodeEndpoint(projectID int) string {
 	return fmt.Sprintf("%s/cdp-user/projects/%d/gamecode/.json", ConfBaseSvc, projectID)
 }
 
-func getBuildInfoEndpoint() string {
-	return fmt.Sprintf("%s/projects/get_from_entitlement/%d/.json", ConfBaseBi, qcEntitlmentID)
+func getEntitlementInfoEndpoint() string {
+	return fmt.Sprintf("%s/cdp-user/entitlement_info/.json", ConfBaseSvc)
 }
 
 func getBranchInfoEndpoint(projectID, branchID int) string {

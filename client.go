@@ -26,21 +26,21 @@ func newLauncherClient(timeout int) *launcherClient {
 	}
 }
 
-func (lc *launcherClient) getBuildInfo() (*BuildInfoResponse, error) {
-	req := &buildInfoRequest{}
-	if err := req.build(getBuildInfoEndpoint()); err != nil {
-		logger.Errorw(fmt.Sprintf("%s: error building build info request", GetCaller()), "error", err, "data", req)
+func (lc *launcherClient) getEntitlementInfo() (*EntitlementInfoResponse, error) {
+	req := &entitlementInfoRequest{}
+	if err := req.build(getEntitlementInfoEndpoint()); err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error building entitlement info request", GetCaller()), "error", err, "data", req)
 		return nil, err
 	}
 	res, err := lc.send(req)
-	if buildInfoResponse, ok := res.(BuildInfoResponse); ok {
-		return &buildInfoResponse, nil
+	if EntitlementInfoResponse, ok := res.(EntitlementInfoResponse); ok {
+		return &EntitlementInfoResponse, nil
 	} else if err != nil {
-		logger.Errorw(fmt.Sprintf("%s: error parsing build info response", GetCaller()), "error", err, "data", res)
+		logger.Errorw(fmt.Sprintf("%s: error parsing entitlement info response", GetCaller()), "error", err, "data", res)
 		return nil, err
 	} else {
-		logger.Errorw(fmt.Sprintf("%s: got an unexpected build info response", GetCaller()), "error", err, "data", res)
-		return nil, formatUnexpectedResponse("receiving build information")
+		logger.Errorw(fmt.Sprintf("%s: got an unexpected entitlement info response", GetCaller()), "error", err, "data", res)
+		return nil, formatUnexpectedResponse("receiving entitlement information")
 	}
 }
 

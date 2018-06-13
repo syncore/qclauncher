@@ -36,10 +36,10 @@ func (r *AuthResponse) validate() error {
 	return nil
 }
 
-func (r *BuildInfoResponse) validate() error {
-	msg := "Build info response failed validation:"
+func (r *EntitlementInfoResponse) validate() error {
+	msg := "Entitlement info response failed validation:"
 	if r == nil {
-		return fmt.Errorf("%s got nil build info response", msg)
+		return fmt.Errorf("%s got nil entitlement info response", msg)
 	}
 	if len(r.Projects) == 0 {
 		return fmt.Errorf("%s no project info present", msg)

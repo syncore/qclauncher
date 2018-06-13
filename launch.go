@@ -15,12 +15,14 @@ import (
 )
 
 const (
-	QCExe          = "QuakeChampions.exe"
-	defArgs        = `--startup --set /Config/GAME_CONFIG/bethesdaGameCode "%GAMECODE%" --set /Config/GAME_CONFIG/bethesdaLoginEnabled 1 --set /Config/Bethesda/Language "%LANGUAGE%" --set /Config/GAME_CONFIG/bethesdaEndpointUrl "https://services.bethesda.net/agora_beam/"`
-	qcEntitlmentID = 48329
-	gameCodeTempl  = "%GAMECODE%"
-	langTempl      = "%LANGUAGE%"
-	defLang        = "en"
+	QCExe                     = "QuakeChampions.exe"
+	defArgs                   = `--startup --set /Config/GAME_CONFIG/bethesdaGameCode "%GAMECODE%" --set /Config/GAME_CONFIG/bethesdaLoginEnabled 1 --set /Config/Bethesda/Language "%LANGUAGE%" --set /Config/GAME_CONFIG/bethesdaEndpointUrl "https://services.bethesda.net/agora_beam/"`
+	qcEntitlmentID            = 48329
+	qcProjectID               = 11
+	qcDefaultBranchIdentifier = "Default"
+	gameCodeTempl             = "%GAMECODE%"
+	langTempl                 = "%LANGUAGE%"
+	defLang                   = "en"
 )
 
 func Launch() error {
@@ -51,19 +53,24 @@ func Launch() error {
 	if err != nil {
 		return err
 	}
-	buildInfo, err := lc.getBuildInfo()
+	entitlementInfo, err := lc.getEntitlementInfo()
 	if err != nil {
-		logger.Errorw(fmt.Sprintf("%s: getBuildInfo error", GetCaller()), "error", err, "data", buildInfo)
+		logger.Errorw(fmt.Sprintf("%s: getEntitlementInfo error", GetCaller()), "error", err, "data", entitlementInfo)
 		return err
 	}
-	logger.Debugw("Build info", "buildInfo", buildInfo)
-	branchInfo, err := lc.getBranchInfo(buildInfo.Projects[0].ID, buildInfo.Branches[0].ID)
+	logger.Debugw("Entitlement info", "entitlementInfo", entitlementInfo)
+	projectID, branchID, _, err := getProjectBranchBuildIdentifiers(entitlementInfo)
+	if err != nil {
+		logger.Errorw(fmt.Sprintf("%s: getBuildBranchIdentifiers error", GetCaller()), "error", err)
+		return err
+	}
+	branchInfo, err := lc.getBranchInfo(projectID, branchID)
 	if err != nil {
 		logger.Errorw(fmt.Sprintf("%s: getBranchInfo error", GetCaller()), "error", err, "data", branchInfo)
 		return err
 	}
 	logger.Debugw("Branch info", "branchInfo", branchInfo)
-	launchArgs, err := lc.getLaunchArgs(buildInfo.Projects[0].ID)
+	launchArgs, err := lc.getLaunchArgs(projectID)
 	if err != nil {
 		logger.Errorw(fmt.Sprintf("%s: getLaunchArgs error", GetCaller()), "error", err, "data", launchArgs)
 		return err
@@ -71,7 +78,7 @@ func Launch() error {
 	exArgs := launchArgs.extractLaunchArgs(branchInfo.LaunchinfoList[0], cfg.Core.Language)
 	logger.Debugw("Launch args", "launchArgs", launchArgs)
 	logger.Debugw("Extracted launch args", "exArgs", exArgs)
-	gameCode, err := lc.getGameCode(buildInfo.Projects[0].ID)
+	gameCode, err := lc.getGameCode(projectID)
 	if err != nil {
 		logger.Errorw(fmt.Sprintf("%s: getGameCode error", GetCaller()), "error", err, "data", gameCode)
 		return err
@@ -164,6 +171,15 @@ func runQC(cfg *Configuration, baseArgs string) error {
 	}
 	handlePostLaunch(cfg)
 	return nil
+}
+
+func getProjectBranchBuildIdentifiers(r *EntitlementInfoResponse) (projectID int, buildID int, branchID int, err error) {
+	for _, v := range r.Branches {
+		if v.Project == qcProjectID && strings.EqualFold(v.Name, qcDefaultBranchIdentifier) {
+			return v.Project, v.ID, v.Build, nil
+		}
+	}
+	return 0, 0, 0, fmt.Errorf("QC build/branch identifiers were not found")
 }
 
 func handlePostLaunch(cfg *Configuration) {

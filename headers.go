@@ -61,7 +61,7 @@ type localRequestExtraHeaders struct {
 
 type requestHeaderAuth struct{ headerMapping }
 type requestHeaderVerify struct{ headerMapping }
-type requestHeaderBuildInfo struct{ headerMapping }
+type requestHeaderEntitlementInfo struct{ headerMapping }
 type requestHeaderBranchInfo struct{ headerMapping }
 type requestHeaderLaunchArgs struct{ headerMapping }
 type requestHeaderGameCode struct{ headerMapping }
@@ -115,24 +115,6 @@ func (h requestHeaderVerify) getBase() (headers map[string][]string) {
 		hkeyContentType:    []string{hvalAcceptEncodingAppJSON},
 		hkeyUa:             []string{hvalUserAgent},
 	}
-}
-
-func (h *requestHeaderBuildInfo) build() error {
-	headers, err := getAll(h)
-	if err != nil {
-		logger.Errorw(fmt.Sprintf("%s: error building build info header", GetCaller()), "error", err)
-		return err
-	}
-	h.headerMapping = headers
-	return nil
-}
-
-func (h requestHeaderBuildInfo) getBase() (headers map[string][]string) {
-	return genericBuildBaseHeaders
-}
-
-func (h requestHeaderBuildInfo) getExtra() localRequestExtraHeaders {
-	return genericExtraHeaders
 }
 
 func (h *requestHeaderBranchInfo) build() error {
@@ -251,6 +233,30 @@ func (h requestHeaderUpdateLauncher) getBase() (headers map[string][]string) {
 
 func (h requestHeaderUpdateLauncher) getExtra() localRequestExtraHeaders {
 	return localRequestExtraHeaders{xcdp: false, auth: false, launcher: true}
+}
+
+func (h *requestHeaderEntitlementInfo) build() error {
+	headers, err := getAll(h)
+	if err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error building entitlement info header", GetCaller()), "error", err)
+		return err
+	}
+	h.headerMapping = headers
+	return nil
+}
+
+func (h requestHeaderEntitlementInfo) getBase() (headers map[string][]string) {
+	return map[string][]string{
+		hkeyHost:           []string{hvalServicesHost},
+		hkeyAcceptEncoding: []string{hvalAcceptEncodingIdentity},
+		hkeyAccept:         []string{hvalAcceptEncodingAppJSON},
+		hkeyContentType:    []string{hvalAcceptEncodingAppJSON},
+		hkeyUa:             []string{hvalUserAgent},
+	}
+}
+
+func (h requestHeaderEntitlementInfo) getExtra() localRequestExtraHeaders {
+	return localRequestExtraHeaders{xcdp: true, auth: false, launcher: false}
 }
 
 func getAll(h localRequestHeader) (headerMapping, error) {

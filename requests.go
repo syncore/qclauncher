@@ -6,7 +6,7 @@ package qclauncher
 import (
 	"fmt"
 
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 const (
@@ -43,7 +43,7 @@ func (r *authRequest) build(addr string) error {
 	}
 	r.Username = cfg.Core.Username
 	r.Password = cfg.Core.Password
-	r.SessionID = uuid.NewV4().String()
+	r.SessionID = uuid.New().String()
 	header := &requestHeaderAuth{}
 	err = header.build()
 	if err != nil {
@@ -78,7 +78,7 @@ type verifyRequest struct {
 }
 
 func (r *verifyRequest) build(addr string) error {
-	r.SessionID = uuid.NewV4().String()
+	r.SessionID = uuid.New().String()
 	header := &requestHeaderVerify{}
 	err := header.build()
 	if err != nil {
@@ -105,35 +105,37 @@ func (r *verifyRequest) needsContent() bool {
 	return true
 }
 
-type buildInfoRequest struct {
-	params *requestParams
+type entitlementInfoRequest struct {
+	EntitlementIDs []int `json:"entitlement_ids"`
+	params         *requestParams
 }
 
-func (r *buildInfoRequest) build(addr string) error {
-	header := &requestHeaderBuildInfo{}
+func (r *entitlementInfoRequest) build(addr string) error {
+	r.EntitlementIDs = []int{0}
+	header := &requestHeaderEntitlementInfo{}
 	err := header.build()
 	if err != nil {
-		logger.Errorw(fmt.Sprintf("%s: error getting build info request headers", GetCaller()), "error", err)
+		logger.Errorw(fmt.Sprintf("%s: error getting entitlement info request headers", GetCaller()), "error", err)
 		return err
 	}
 	r.params = &requestParams{header: header.values, endpointAddr: addr}
 	return nil
 }
 
-func (r *buildInfoRequest) getParams() *requestParams {
+func (r *entitlementInfoRequest) getParams() *requestParams {
 	return r.params
 }
 
-func (r *buildInfoRequest) expectedResponse() remoteResponseType {
-	return rrBuildInfo
+func (r *entitlementInfoRequest) expectedResponse() remoteResponseType {
+	return rrEntitlementInfo
 }
 
-func (r *buildInfoRequest) action() string {
-	return actionGET
+func (r *entitlementInfoRequest) action() string {
+	return actionPOST
 }
 
-func (r *buildInfoRequest) needsContent() bool {
-	return false
+func (r *entitlementInfoRequest) needsContent() bool {
+	return true
 }
 
 type preSaveVerifyRequest struct {
@@ -145,7 +147,7 @@ type preSaveVerifyRequest struct {
 
 func (r *preSaveVerifyRequest) build(addr string) error {
 	// Login credentials are passed in the struct prior to allowing save
-	r.SessionID = uuid.NewV4().String()
+	r.SessionID = uuid.New().String()
 	header := &requestHeaderAuth{}
 	err := header.build()
 	if err != nil {
