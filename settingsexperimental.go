@@ -9,7 +9,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/boltdb/bolt"
+	bolt "github.com/coreos/bbolt"
 )
 
 type QCExperimentalSettings struct {
@@ -58,10 +58,7 @@ func (s *QCExperimentalSettings) save(ls *LauncherStore) error {
 }
 
 func (s *QCExperimentalSettings) decode(data []byte) error {
-	buf := bytes.NewBuffer(data)
-	dec := gob.NewDecoder(buf)
-	err := dec.Decode(&s)
-	if err != nil {
+	if err := gob.NewDecoder(bytes.NewBuffer(data)).Decode(&s); err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error decoding QC experimental settings data", GetCaller()), "error", err)
 		return err
 	}
@@ -70,9 +67,7 @@ func (s *QCExperimentalSettings) decode(data []byte) error {
 
 func (s *QCExperimentalSettings) encode() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	enc := gob.NewEncoder(buf)
-	err := enc.Encode(s)
-	if err != nil {
+	if err := gob.NewEncoder(buf).Encode(s); err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error encoding QC experimental settings data", GetCaller()), "error", err)
 		return nil, err
 	}

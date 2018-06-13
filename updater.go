@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/boltdb/bolt"
+	bolt "github.com/coreos/bbolt"
 	"github.com/lxn/walk"
 	"github.com/lxn/win"
 	"github.com/skratchdot/open-golang/open"

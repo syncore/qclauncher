@@ -10,7 +10,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/boltdb/bolt"
+	bolt "github.com/coreos/bbolt"
 )
 
 type LauncherSettings struct {
@@ -75,10 +75,7 @@ func (s *LauncherSettings) save(ls *LauncherStore) error {
 }
 
 func (s *LauncherSettings) decode(data []byte) error {
-	buf := bytes.NewBuffer(data)
-	dec := gob.NewDecoder(buf)
-	err := dec.Decode(&s)
-	if err != nil {
+	if err := gob.NewDecoder(bytes.NewBuffer(data)).Decode(&s); err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error decoding launcher settings data", GetCaller()), "error", err)
 		return err
 	}
@@ -87,9 +84,7 @@ func (s *LauncherSettings) decode(data []byte) error {
 
 func (s *LauncherSettings) encode() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	enc := gob.NewEncoder(buf)
-	err := enc.Encode(s)
-	if err != nil {
+	if err := gob.NewEncoder(buf).Encode(s); err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error encoding launcher settings data", GetCaller()), "error", err)
 		return nil, err
 	}

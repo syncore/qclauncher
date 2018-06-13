@@ -8,7 +8,7 @@ import (
 	"encoding/gob"
 	"fmt"
 
-	"github.com/boltdb/bolt"
+	bolt "github.com/coreos/bbolt"
 )
 
 type TokenAuth struct {

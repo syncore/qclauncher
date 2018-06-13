@@ -9,6 +9,7 @@ import (
 	"github.com/lxn/walk"
 	wd "github.com/lxn/walk/declarative"
 	"github.com/lxn/win"
+	"github.com/skratchdot/open-golang/open"
 )
 
 const (
@@ -103,8 +104,10 @@ func newMainWindow(cfg *Configuration, opts *QCLMainWindowOptions) *QCLMainWindo
 					if button != walk.LeftButton {
 						return
 					}
-					ShowInfoMsg(fmt.Sprintf("QCLauncher %.2f", version),
-						fmt.Sprintf("%s\nhttp://github.com/syncore/qclauncher\nSupport Quake!", title), mainWindow.MainWindow)
+					if err := open.Start("https://github.com/syncore/qclauncher"); err != nil {
+						logger.Errorw(fmt.Sprintf("%s: error launching web browser to load QCLauncher homepage", GetCaller()), "error", err)
+						return
+					}
 				},
 			},
 			wd.Composite{
