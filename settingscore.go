@@ -52,12 +52,10 @@ func (s *QCCoreSettings) save(ls *LauncherStore) error {
 				"error", err)
 			return err
 		}
-		err = b.Put([]byte(keyQCCoreSettings), encoded)
-		if err != nil {
+		if err = b.Put([]byte(keyQCCoreSettings), encoded); err != nil {
 			logger.Errorw(fmt.Sprintf("%s: error saving encoded QC core settings to datastore", GetCaller()), "error", err)
 		}
-		err = b.Put([]byte(keyTokenKey), *tmpKey)
-		if err != nil {
+		if err = b.Put([]byte(keyTokenKey), *tmpKey); err != nil {
 			logger.Errorw(fmt.Sprintf("%s: error saving credential key to datastore", GetCaller()), "error", err)
 			return err
 		}

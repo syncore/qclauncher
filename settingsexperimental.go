@@ -52,8 +52,7 @@ func (s *QCExperimentalSettings) save(ls *LauncherStore) error {
 				"error", err)
 			return err
 		}
-		err = b.Put([]byte(keyQCExperimentalSettings), encoded)
-		return err
+		return b.Put([]byte(keyQCExperimentalSettings), encoded)
 	})
 }
 

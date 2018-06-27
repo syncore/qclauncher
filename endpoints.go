@@ -6,8 +6,9 @@ package qclauncher
 import "fmt"
 
 const (
-	updateQCEndpoint       = "https://qc.syncore.org/launcher/v2/checkforupdate"
-	updateLauncherEndpoint = "https://qc.syncore.org/qcl_latest_version.json"
+	updateQCEndpoint            = "https://qc.syncore.org/launcher/v2/checkforupdate"
+	updateLauncherEndpoint      = "https://qc.syncore.org/qcl_latest_version.json"
+	entitlementCheckAPIEndpoint = "https://qc.syncore.org/entitlement_api_check.json"
 )
 
 func getAuthEndpoint() string {
@@ -24,6 +25,10 @@ func getServerStatusEndpoint() string {
 
 func getGameCodeEndpoint(projectID int) string {
 	return fmt.Sprintf("%s/cdp-user/projects/%d/gamecode/.json", ConfBaseSvc, projectID)
+}
+
+func getBuildInfoEndpoint() string {
+	return fmt.Sprintf("%s/projects/get_from_entitlement/%d/.json", ConfBaseBi, qcEntitlmentID)
 }
 
 func getEntitlementInfoEndpoint() string {

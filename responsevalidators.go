@@ -50,6 +50,20 @@ func (r *EntitlementInfoResponse) validate() error {
 	return nil
 }
 
+func (r *BuildInfoResponse) validate() error {
+	msg := "Build info response failed validation:"
+	if r == nil {
+		return fmt.Errorf("%s got nil build info response", msg)
+	}
+	if len(r.Projects) == 0 {
+		return fmt.Errorf("%s no project info present", msg)
+	}
+	if len(r.Branches) == 0 {
+		return fmt.Errorf("%s no branch info present", msg)
+	}
+	return nil
+}
+
 func (r *BranchInfoResponse) validate() error {
 	msg := "Branch info response failed validation:"
 	if r == nil {
@@ -110,6 +124,14 @@ func (r *UpdateLauncherResponse) validate() error {
 	msg := "QC update launcher response failed validation:"
 	if r == nil {
 		return fmt.Errorf("%s got nil update launcher response", msg)
+	}
+	return nil
+}
+
+func (r *EntitlementCheckAPIResponse) validate() error {
+	msg := "Entitlement check API response failed validation:"
+	if r == nil {
+		return fmt.Errorf("%s got nil entitlement check API response", msg)
 	}
 	return nil
 }

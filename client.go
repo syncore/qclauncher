@@ -15,14 +15,12 @@ import (
 )
 
 type launcherClient struct {
-	Hc *http.Client
+	*http.Client
 }
 
 func newLauncherClient(timeout int) *launcherClient {
 	return &launcherClient{
-		Hc: &http.Client{
-			Timeout: time.Duration(timeout) * time.Second,
-		},
+		&http.Client{Timeout: time.Duration(timeout) * time.Second},
 	}
 }
 
@@ -33,14 +31,50 @@ func (lc *launcherClient) getEntitlementInfo() (*EntitlementInfoResponse, error)
 		return nil, err
 	}
 	res, err := lc.send(req)
-	if EntitlementInfoResponse, ok := res.(EntitlementInfoResponse); ok {
-		return &EntitlementInfoResponse, nil
+	if entitlementInfoResponse, ok := res.(EntitlementInfoResponse); ok {
+		return &entitlementInfoResponse, nil
 	} else if err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error parsing entitlement info response", GetCaller()), "error", err, "data", res)
 		return nil, err
 	} else {
 		logger.Errorw(fmt.Sprintf("%s: got an unexpected entitlement info response", GetCaller()), "error", err, "data", res)
 		return nil, formatUnexpectedResponse("receiving entitlement information")
+	}
+}
+
+func (lc *launcherClient) getBuildInfo() (*BuildInfoResponse, error) {
+	req := &buildInfoRequest{}
+	if err := req.build(getBuildInfoEndpoint()); err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error building build info request", GetCaller()), "error", err, "data", req)
+		return nil, err
+	}
+	res, err := lc.send(req)
+	if buildInfoResponse, ok := res.(BuildInfoResponse); ok {
+		return &buildInfoResponse, nil
+	} else if err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error parsing build info response", GetCaller()), "error", err, "data", res)
+		return nil, err
+	} else {
+		logger.Errorw(fmt.Sprintf("%s: got an unexpected build info response", GetCaller()), "error", err, "data", res)
+		return nil, formatUnexpectedResponse("receiving build information")
+	}
+}
+
+func (lc *launcherClient) checkEntitlement() (*EntitlementCheckAPIResponse, error) {
+	req := &entitlementCheckAPIRequest{}
+	if err := req.build(entitlementCheckAPIEndpoint); err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error building entitlement check API request", GetCaller()), "error", err, "data", req)
+		return nil, err
+	}
+	res, err := lc.send(req)
+	if entitlementCheckAPIResponse, ok := res.(EntitlementCheckAPIResponse); ok {
+		return &entitlementCheckAPIResponse, nil
+	} else if err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error parsing entitlement check API response", GetCaller()), "error", err, "data", res)
+		return nil, err
+	} else {
+		logger.Errorw(fmt.Sprintf("%s: got an unexpected entitlement check API response", GetCaller()), "error", err, "data", res)
+		return nil, formatUnexpectedResponse("receiving entitlement check API information")
 	}
 }
 
@@ -250,7 +284,7 @@ func (lc *launcherClient) send(req localRequest) (interface{}, error) {
 		return nil, err
 	}
 	hr.Header = p.header
-	res, err := lc.Hc.Do(hr)
+	res, err := lc.Do(hr)
 	if err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error sending request", GetCaller()), "error", err, "data", hr)
 		return nil, err

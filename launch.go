@@ -53,16 +53,27 @@ func Launch() error {
 	if err != nil {
 		return err
 	}
-	entitlementInfo, err := lc.getEntitlementInfo()
-	if err != nil {
-		logger.Errorw(fmt.Sprintf("%s: getEntitlementInfo error", GetCaller()), "error", err, "data", entitlementInfo)
-		return err
-	}
-	logger.Debugw("Entitlement info", "entitlementInfo", entitlementInfo)
-	projectID, branchID, _, err := getProjectBranchBuildIdentifiers(entitlementInfo)
-	if err != nil {
-		logger.Errorw(fmt.Sprintf("%s: getBuildBranchIdentifiers error", GetCaller()), "error", err)
-		return err
+	var projectID, branchID int
+	if UseEntitlementAPI {
+		entitlementInfo, err := lc.getEntitlementInfo()
+		if err != nil {
+			logger.Errorw(fmt.Sprintf("%s: getEntitlementInfo error", GetCaller()), "error", err, "data", entitlementInfo)
+			return err
+		}
+		logger.Debugw("Entitlement info", "entitlementInfo", entitlementInfo)
+		projectID, branchID, _, err = getProjectBranchBuildIdentifiers(entitlementInfo)
+		if err != nil {
+			logger.Errorw(fmt.Sprintf("%s: getBuildBranchIdentifiers error", GetCaller()), "error", err)
+			return err
+		}
+	} else {
+		buildInfo, err := lc.getBuildInfo()
+		if err != nil {
+			logger.Errorw(fmt.Sprintf("%s: getBuildInfo error", GetCaller()), "error", err, "data", buildInfo)
+			return err
+		}
+		logger.Debugw("Build info", "buildInfo", buildInfo)
+		projectID, branchID = buildInfo.Projects[0].ID, buildInfo.Branches[0].ID
 	}
 	branchInfo, err := lc.getBranchInfo(projectID, branchID)
 	if err != nil {

@@ -52,8 +52,7 @@ func (s *LauncherSettings) save(ls *LauncherStore) error {
 				"error", err)
 			return err
 		}
-		err = b.Put([]byte(keyLauncherSettings), encoded)
-		if err != nil {
+		if err = b.Put([]byte(keyLauncherSettings), encoded); err != nil {
 			logger.Errorw(fmt.Sprintf("%s: error saving encoded launcher settings to datastore", GetCaller()), "error", err)
 			return err
 		}
@@ -65,8 +64,7 @@ func (s *LauncherSettings) save(ls *LauncherStore) error {
 		}
 		dfv := make([]byte, 8)
 		binary.LittleEndian.PutUint64(dfv, uint64(dataFileVersion))
-		err = b.Put([]byte(keyDfVer), dfv)
-		if err != nil {
+		if err = b.Put([]byte(keyDfVer), dfv); err != nil {
 			logger.Errorw(fmt.Sprintf("%s: error saving data file version to datastore", GetCaller()), "error", err)
 			return err
 		}

@@ -52,16 +52,12 @@ func (t *TokenAuth) save(ls *LauncherStore) error {
 				"error", err)
 			return err
 		}
-		err = b.Put([]byte(keyTokenAuth), encoded)
-		return err
+		return b.Put([]byte(keyTokenAuth), encoded)
 	})
 }
 
 func (t *TokenAuth) decode(data, key []byte) error {
-	buf := bytes.NewBuffer(data)
-	dec := gob.NewDecoder(buf)
-	err := dec.Decode(&t)
-	if err != nil {
+	if err := gob.NewDecoder(bytes.NewBuffer(data)).Decode(&t); err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error decoding auth token data", GetCaller()), "error", err)
 		return err
 	}
@@ -76,15 +72,13 @@ func (t *TokenAuth) decode(data, key []byte) error {
 
 func (t *TokenAuth) encode(existingKey []byte) ([]byte, error) {
 	buf := new(bytes.Buffer)
-	enc := gob.NewEncoder(buf)
 	encToken, err := encrypt(t.Token, &existingKey)
 	if err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error encrypting auth token credential", GetCaller()), "error", err)
 		return nil, err
 	}
 	t.Token = encToken
-	err = enc.Encode(t)
-	if err != nil {
+	if err = gob.NewEncoder(buf).Encode(t); err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error encoding auth token data", GetCaller()), "error", err)
 		return nil, err
 	}
@@ -122,16 +116,13 @@ func (t *TokenKey) save(ls *LauncherStore) error {
 				"error", err)
 			return err
 		}
-		err = b.Put([]byte(keyTokenKey), encoded)
-		return err
+		return b.Put([]byte(keyTokenKey), encoded)
 	})
 }
 
 func (t *TokenKey) decode(data []byte) error {
-	buf := bytes.NewBuffer(data)
-	dec := gob.NewDecoder(buf)
-	err := dec.Decode(&t)
-	if err != nil {
+	dec := gob.NewDecoder(bytes.NewBuffer(data))
+	if err := dec.Decode(&t); err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error decoding credential key data", GetCaller()), "error", err)
 		return err
 	}

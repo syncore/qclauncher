@@ -23,6 +23,7 @@ const (
 	rrUpdateQC
 	rrUpdateLauncher
 	rrEntitlementInfo
+	rrEntitlementCheckAPI
 )
 
 type remoteResponse interface {
@@ -110,6 +111,11 @@ type AuthResponse struct {
 	isPreSaveVerification bool        `json:"-"` // custom flag for internal launcher use
 }
 
+type BuildInfoResponse struct {
+	Projects []Project `json:"projects"`
+	Branches []Branch  `json:"branches"`
+}
+
 type FileDiffContainer struct {
 	ID        int `json:"id"`
 	FromBuild int `json:"from_build"`
@@ -194,6 +200,10 @@ type UpdateLauncherResponse struct {
 	URL           string    `json:"url"`
 }
 
+type EntitlementCheckAPIResponse struct {
+	UseEntitlementAPI bool `json:"useEntitlementAPI"`
+}
+
 type EntitlementInfoResponse struct {
 	Blacklist EntitlementBlacklist `json:"blacklist"`
 	Branches  []EntitlementBranch  `json:"branches"`
@@ -248,6 +258,18 @@ func (response *AuthResponse) parse(j json.RawMessage) error {
 	}
 	if err := updateAuthToken(response.isPreSaveVerification, response.Token); err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error updating auth token from response", GetCaller()), "error", err, "data", response.Token)
+		return err
+	}
+	return nil
+}
+
+func (response *BuildInfoResponse) parse(j json.RawMessage) error {
+	if err := json.Unmarshal(j, response); err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error parsing raw build info response message", GetCaller()), "error", err, "data", string(j))
+		return err
+	}
+	if err := validateResponse(response); err != nil {
+		logger.Errorw(fmt.Sprintf("%s: build info response failed validation", GetCaller()), "error", err, "data", response)
 		return err
 	}
 	return nil
@@ -337,6 +359,18 @@ func (response *EntitlementInfoResponse) parse(j json.RawMessage) error {
 	return nil
 }
 
+func (response *EntitlementCheckAPIResponse) parse(j json.RawMessage) error {
+	if err := json.Unmarshal(j, response); err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error parsing raw entitlement check API response message", GetCaller()), "error", err, "data", string(j))
+		return err
+	}
+	if err := validateResponse(response); err != nil {
+		logger.Errorw(fmt.Sprintf("%s: entitlement check API response failed validation", GetCaller()), "error", err, "data", response)
+		return err
+	}
+	return nil
+}
+
 // yeah, cyclomatic complexity and stuff...
 func parseRemoteResponseData(rd *remoteResponseData) (interface{}, error) {
 	switch rd.ResponseType {
@@ -345,6 +379,13 @@ func parseRemoteResponseData(rd *remoteResponseData) (interface{}, error) {
 		if rd.ResponseType == rrPreSave {
 			r.isPreSaveVerification = true
 		}
+		err := r.parse(rd.Data)
+		if err != nil {
+			return nil, err
+		}
+		return r, nil
+	case rrBuildInfo:
+		var r BuildInfoResponse
 		err := r.parse(rd.Data)
 		if err != nil {
 			return nil, err
@@ -394,6 +435,13 @@ func parseRemoteResponseData(rd *remoteResponseData) (interface{}, error) {
 		return r, nil
 	case rrUpdateLauncher:
 		var r UpdateLauncherResponse
+		err := r.parse(rd.Data)
+		if err != nil {
+			return nil, err
+		}
+		return r, nil
+	case rrEntitlementCheckAPI:
+		var r EntitlementCheckAPIResponse
 		err := r.parse(rd.Data)
 		if err != nil {
 			return nil, err

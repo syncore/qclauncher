@@ -27,6 +27,7 @@ func init() {
 	flag.BoolVar(&qclauncher.ConfEnforceHash, "enforcehash", true, "Enforce QC game hash checking (disabling is not recommended)")
 	flag.IntVar(&qclauncher.ConfMaxFPS, "maxfps", 0, "Max value to limit FPS to (experimental)")
 	flag.BoolVar(&qclauncher.ConfShowMainWindow, "show", false, "Restore the QCLauncher main UI window")
+	flag.BoolVar(&qclauncher.ConfUseEntitlementAPI, "entitlement", false, "Use Bethesda.net entitlement API")
 }
 
 func main() {
@@ -70,6 +71,11 @@ func execMain() {
 	if !qclauncher.ConfSkipUpdates {
 		// param of type UpdateLauncher to this call throws no error
 		_ = qclauncher.CheckUpdate(qclauncher.ConfEnforceHash, qclauncher.UpdateLauncher)
+	}
+	if qclauncher.ConfUseEntitlementAPI {
+		qclauncher.UseEntitlementAPI = true
+	} else {
+		qclauncher.SetEntitlementAPI()
 	}
 	if qclauncher.ConfShowMainWindow {
 		qclauncher.LoadUI(cfg)

@@ -138,6 +138,37 @@ func (r *entitlementInfoRequest) needsContent() bool {
 	return true
 }
 
+type buildInfoRequest struct {
+	params *requestParams
+}
+
+func (r *buildInfoRequest) build(addr string) error {
+	header := &requestHeaderBuildInfo{}
+	err := header.build()
+	if err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error getting build info request headers", GetCaller()), "error", err)
+		return err
+	}
+	r.params = &requestParams{header: header.values, endpointAddr: addr}
+	return nil
+}
+
+func (r *buildInfoRequest) getParams() *requestParams {
+	return r.params
+}
+
+func (r *buildInfoRequest) expectedResponse() remoteResponseType {
+	return rrBuildInfo
+}
+
+func (r *buildInfoRequest) action() string {
+	return actionGET
+}
+
+func (r *buildInfoRequest) needsContent() bool {
+	return false
+}
+
 type preSaveVerifyRequest struct {
 	Username  string `json:"username"`
 	SessionID string `json:"session_id"`
@@ -360,5 +391,36 @@ func (r *updateLauncherRequest) action() string {
 }
 
 func (r *updateLauncherRequest) needsContent() bool {
+	return false
+}
+
+type entitlementCheckAPIRequest struct {
+	params *requestParams
+}
+
+func (r *entitlementCheckAPIRequest) build(addr string) error {
+	header := &requestHeaderEntitlementAPICheck{}
+	err := header.build()
+	if err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error getting entitlement check API request headers", GetCaller()), "error", err)
+		return err
+	}
+	r.params = &requestParams{header: header.values, endpointAddr: addr}
+	return nil
+}
+
+func (r *entitlementCheckAPIRequest) getParams() *requestParams {
+	return r.params
+}
+
+func (r *entitlementCheckAPIRequest) expectedResponse() remoteResponseType {
+	return rrEntitlementCheckAPI
+}
+
+func (r *entitlementCheckAPIRequest) action() string {
+	return actionGET
+}
+
+func (r *entitlementCheckAPIRequest) needsContent() bool {
 	return false
 }

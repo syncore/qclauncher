@@ -61,6 +61,7 @@ type localRequestExtraHeaders struct {
 
 type requestHeaderAuth struct{ headerMapping }
 type requestHeaderVerify struct{ headerMapping }
+type requestHeaderBuildInfo struct{ headerMapping }
 type requestHeaderEntitlementInfo struct{ headerMapping }
 type requestHeaderBranchInfo struct{ headerMapping }
 type requestHeaderLaunchArgs struct{ headerMapping }
@@ -68,6 +69,7 @@ type requestHeaderGameCode struct{ headerMapping }
 type requestHeaderServerStatus struct{ headerMapping }
 type requestHeaderUpdateQC struct{ headerMapping }
 type requestHeaderUpdateLauncher struct{ headerMapping }
+type requestHeaderEntitlementAPICheck struct{ headerMapping }
 
 func (h *requestHeaderAuth) build() error {
 	headers, err := getAll(h)
@@ -115,6 +117,24 @@ func (h requestHeaderVerify) getBase() (headers map[string][]string) {
 		hkeyContentType:    []string{hvalAcceptEncodingAppJSON},
 		hkeyUa:             []string{hvalUserAgent},
 	}
+}
+
+func (h *requestHeaderBuildInfo) build() error {
+	headers, err := getAll(h)
+	if err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error building build info header", GetCaller()), "error", err)
+		return err
+	}
+	h.headerMapping = headers
+	return nil
+}
+
+func (h requestHeaderBuildInfo) getBase() (headers map[string][]string) {
+	return genericBuildBaseHeaders
+}
+
+func (h requestHeaderBuildInfo) getExtra() localRequestExtraHeaders {
+	return genericExtraHeaders
 }
 
 func (h *requestHeaderBranchInfo) build() error {
@@ -257,6 +277,24 @@ func (h requestHeaderEntitlementInfo) getBase() (headers map[string][]string) {
 
 func (h requestHeaderEntitlementInfo) getExtra() localRequestExtraHeaders {
 	return localRequestExtraHeaders{xcdp: true, auth: false, launcher: false}
+}
+
+func (h *requestHeaderEntitlementAPICheck) build() error {
+	headers, err := getAll(h)
+	if err != nil {
+		logger.Errorw(fmt.Sprintf("%s: error building entitlement API check header", GetCaller()), "error", err)
+		return err
+	}
+	h.headerMapping = headers
+	return nil
+}
+
+func (h requestHeaderEntitlementAPICheck) getBase() (headers map[string][]string) {
+	return map[string][]string{}
+}
+
+func (h requestHeaderEntitlementAPICheck) getExtra() localRequestExtraHeaders {
+	return localRequestExtraHeaders{xcdp: false, auth: false, launcher: true}
 }
 
 func getAll(h localRequestHeader) (headerMapping, error) {
