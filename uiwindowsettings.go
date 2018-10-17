@@ -63,6 +63,15 @@ func newSettingsWindow(cfg *Configuration) *QCLSettingsWindow {
 								ShowErrorMsg("Save Error", err.Error(), settingsWindow.MainWindow)
 								return
 							}
+							if cfg.Core.FP == "" {
+								ShowInfoMsg("Opening Bethesda Launcher",
+									"The Bethesda Launcher will now open to get the unique Bethesda hardware fingerprint used for "+
+										fmt.Sprintf("QC authentication. This may take up to 45 seconds. The Bethesda Launcher may start and exit up to %d times. ",
+											fpAttempts)+"Please do not disturb the launcher and please wait until this is complete. If the launcher is performing an update, "+
+										fmt.Sprintf("then this will probably fail. Try again after the update is completed. If successful, this only needs to be performed once unless you delete your %s file.", DataFile),
+									settingsWindow.MainWindow)
+							}
+							// TODO: this is all on the UI thread and with new FP step might be problematic
 							if err := saveConfiguration(cfg); err != nil {
 								ShowErrorMsg("Save Error", err.Error(), settingsWindow.MainWindow)
 								return

@@ -40,7 +40,7 @@ var (
 		hkeyXCdpApp:      hvalXCdpApp,
 		hkeyXCdpPlatform: hvalXCdpPlatform,
 	}
-	genericExtraHeaders = localRequestExtraHeaders{xcdp: false, auth: false, launcher: false}
+	genericExtraHeaders = localRequestExtraHeaders{xcdp: false, auth: false, launcher: false, fp: true}
 )
 
 type localRequestHeader interface {
@@ -57,6 +57,7 @@ type localRequestExtraHeaders struct {
 	xcdp     bool
 	auth     bool
 	launcher bool
+	fp       bool
 }
 
 type requestHeaderAuth struct{ headerMapping }
@@ -82,7 +83,7 @@ func (h *requestHeaderAuth) build() error {
 }
 
 func (h requestHeaderAuth) getExtra() localRequestExtraHeaders {
-	return localRequestExtraHeaders{xcdp: true, auth: false, launcher: false}
+	return localRequestExtraHeaders{xcdp: true, auth: false, launcher: false, fp: true}
 }
 
 func (h requestHeaderAuth) getBase() (headers map[string][]string) {
@@ -106,7 +107,7 @@ func (h *requestHeaderVerify) build() error {
 }
 
 func (h requestHeaderVerify) getExtra() localRequestExtraHeaders {
-	return localRequestExtraHeaders{xcdp: true, auth: true, launcher: false}
+	return localRequestExtraHeaders{xcdp: true, auth: true, launcher: false, fp: true}
 }
 
 func (h requestHeaderVerify) getBase() (headers map[string][]string) {
@@ -193,7 +194,7 @@ func (h requestHeaderGameCode) getBase() (headers map[string][]string) {
 }
 
 func (h *requestHeaderGameCode) getExtra() localRequestExtraHeaders {
-	return localRequestExtraHeaders{xcdp: true, auth: true, launcher: false}
+	return localRequestExtraHeaders{xcdp: true, auth: true, launcher: false, fp: true}
 }
 
 func (h *requestHeaderUpdateQC) build() error {
@@ -211,7 +212,7 @@ func (h requestHeaderUpdateQC) getBase() (headers map[string][]string) {
 }
 
 func (h requestHeaderUpdateQC) getExtra() localRequestExtraHeaders {
-	return localRequestExtraHeaders{xcdp: false, auth: false, launcher: true}
+	return localRequestExtraHeaders{xcdp: false, auth: false, launcher: true, fp: false}
 }
 
 func (h *requestHeaderServerStatus) build() error {
@@ -252,7 +253,7 @@ func (h requestHeaderUpdateLauncher) getBase() (headers map[string][]string) {
 }
 
 func (h requestHeaderUpdateLauncher) getExtra() localRequestExtraHeaders {
-	return localRequestExtraHeaders{xcdp: false, auth: false, launcher: true}
+	return localRequestExtraHeaders{xcdp: false, auth: false, launcher: true, fp: false}
 }
 
 func (h *requestHeaderEntitlementInfo) build() error {
@@ -276,7 +277,7 @@ func (h requestHeaderEntitlementInfo) getBase() (headers map[string][]string) {
 }
 
 func (h requestHeaderEntitlementInfo) getExtra() localRequestExtraHeaders {
-	return localRequestExtraHeaders{xcdp: true, auth: false, launcher: false}
+	return localRequestExtraHeaders{xcdp: true, auth: false, launcher: false, fp: true}
 }
 
 func (h *requestHeaderEntitlementAPICheck) build() error {
@@ -294,7 +295,7 @@ func (h requestHeaderEntitlementAPICheck) getBase() (headers map[string][]string
 }
 
 func (h requestHeaderEntitlementAPICheck) getExtra() localRequestExtraHeaders {
-	return localRequestExtraHeaders{xcdp: false, auth: false, launcher: true}
+	return localRequestExtraHeaders{xcdp: false, auth: false, launcher: true, fp: false}
 }
 
 func getAll(h localRequestHeader) (headerMapping, error) {
@@ -305,9 +306,33 @@ func getAll(h localRequestHeader) (headerMapping, error) {
 			all[k] = []string{v}
 		}
 		// config vars set during initilization
-		all[hkeyXSrcFp] = []string{ConfSrcFp}
 		all[hkeyXCdpAppVer] = []string{ConfXAppVer}
 		all[hkeyXCdpLibVer] = []string{ConfXLibVer}
+	}
+	if e.fp {
+		fp := ""
+		if ConfXSrcFp != XSrcFpDef {
+			all[hkeyXSrcFp] = []string{ConfXSrcFp}
+		} else {
+			if tmpFp != "" {
+				fp = tmpFp
+			} else {
+				if FileExists(GetDataFilePath()) {
+					cfg, err := GetConfiguration()
+					if err != nil {
+						logger.Errorw(fmt.Sprintf("%s: error getting configuration for fp lookup when getting all request headers",
+							GetCaller()), "error", err)
+						return headerMapping{}, err
+					}
+					fp = cfg.Core.FP
+				} else {
+					err := fmt.Errorf("No FP value was present when getting all request headers")
+					logger.Errorw(fmt.Sprintf("%s: error getting all request headers", GetCaller()), "error", err)
+					return headerMapping{}, err
+				}
+			}
+			all[hkeyXSrcFp] = []string{fp}
+		}
 	}
 	if e.auth {
 		cfg, err := GetConfiguration()

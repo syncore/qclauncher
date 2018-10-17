@@ -3,7 +3,7 @@ cd %GOPATH%\src\github.com\syncore\qclauncher
 if exist %GOPATH%\src\github.com\syncore\qclauncher\bin rmdir /S /Q %GOPATH%\src\github.com\syncore\qclauncher\bin
 go get github.com/kardianos/govendor
 go get github.com/josephspurrier/goversioninfo/cmd/goversioninfo
-go get github.com/jteeuwen/go-bindata/...
+go get github.com/kevinburke/go-bindata/...
 if exist %GOPATH%\bin\govendor.exe copy /Y %GOPATH%\bin\govendor.exe cmd\qclauncher\ >NUL
 if exist %GOPATH%\bin\goversioninfo.exe copy /Y %GOPATH%\bin\goversioninfo.exe cmd\qclauncher\ >NUL
 if exist %GOPATH%\bin\go-bindata.exe copy /Y %GOPATH%\bin\go-bindata.exe cmd\qclauncher\ >NUL

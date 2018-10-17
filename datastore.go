@@ -20,7 +20,7 @@ type Storable interface {
 }
 
 const (
-	dataFileVersion           int64 = 3
+	dataFileVersion           int64 = 4
 	bucketSettings                  = "sb"
 	bucketLastUpdate                = "lub"
 	keyQCCoreSettings               = "core"
@@ -39,6 +39,7 @@ var (
 		DataFile)
 	tmpToken string
 	tmpKey   *[]byte
+	tmpFp    string
 )
 
 func Save(s Storable) error {

@@ -3,7 +3,7 @@
 
 package qclauncher
 
-var UseEntitlementAPI = false
+var UseEntitlementAPI = true
 
 func SetEntitlementAPI() {
 	l := newLauncherClient(defTimeout)
@@ -16,5 +16,6 @@ func (lc *launcherClient) getEntitlementAPIValue() bool {
 		logger.Errorw("Error occurred while checking entitlement check API response, using default value of false", "error", err)
 		return false
 	}
+	logger.Debugf("Use entitlement API: %v", entitlement)
 	return entitlement.UseEntitlementAPI
 }

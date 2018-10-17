@@ -13,12 +13,13 @@ const (
 	DataFile           = "data.qcl"
 	LockFile           = "qcl.lock"
 	ShowMainWindowFlag = "show"
-	XAppDefVer         = "1.37.3"
-	XLibDefVer         = "1.37.3"
+	XAppDefVer         = "1.43.3"
+	XLibDefVer         = "1.43.3"
+	XSrcFpDef          = ""
 	bDefBase           = "buildinfo.cdp.bethesda.net"
-	sDefBase           = "services.bethesda.net"
+	sDefBase           = "api.bethesda.net"
 	defTimeout         = 10
-	version            = 1.05
+	version            = 1.06
 )
 
 var (
@@ -28,13 +29,13 @@ var (
 	ConfLocalAddr         string
 	ConfXAppVer           string
 	ConfXLibVer           string
+	ConfXSrcFp            string
 	ConfUpdateInterval    int64
 	ConfSkipUpdates       bool
 	ConfEnforceHash       bool
 	ConfMaxFPS            int
 	ConfBaseSvc           string
 	ConfBaseBi            string
-	ConfSrcFp             string
 	ConfShowMainWindow    bool
 	ConfUseEntitlementAPI bool
 	Lock                  *Single
@@ -44,7 +45,6 @@ func Setup() {
 	setLogger()
 	setLock()
 	setBaseAddr()
-	setSrcFp()
 	setVersionInfo()
 }
 
@@ -65,10 +65,6 @@ func setLock() {
 	if Lock == nil {
 		Lock = NewSingle(LockFile)
 	}
-}
-
-func setSrcFp() {
-	ConfSrcFp = genFp()
 }
 
 func setVersionInfo() {

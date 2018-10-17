@@ -4,7 +4,7 @@ cd $GOPATH/src/github.com/syncore/qclauncher
 rm -rf $GOPATH/src/github.com/syncore/qclauncher/bin 2>/dev/null
 go get github.com/kardianos/govendor
 go get github.com/josephspurrier/goversioninfo/cmd/goversioninfo
-go get github.com/jteeuwen/go-bindata/...
+go get github.com/kevinburke/go-bindata/...
 rm $GOPATH/src/github.com/syncore/qclauncher/qclauncher.exe 2>/dev/null
 rm $GOPATH/src/github.com/syncore/qclauncher/qclauncher.log 2>/dev/null
 rm $GOPATH/src/github.com/syncore/qclauncher/data.qcl 2>/dev/null

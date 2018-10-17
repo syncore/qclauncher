@@ -6,7 +6,7 @@
 package main
 
 //go:generate goversioninfo -manifest "../../resources/qclauncher.manifest" -icon "../../resources/qclauncher.ico" -o "qclauncher_amd64.syso" -64 ../../resources/versioninfo.json
-//go:generate go-bindata -pkg "resources" -o ../../resources/logo.go ../../resources/img
+//go:generate go-bindata -pkg "resources" -o ../../resources/res.go ../../resources/img ../../resources/bin
 
 import (
 	"flag"
@@ -21,6 +21,7 @@ func init() {
 	flag.StringVar(&qclauncher.ConfLocalAddr, "localaddr", "localhost:30002", "Local endpoint host:port for test environment")
 	flag.StringVar(&qclauncher.ConfXAppVer, "xappver", qclauncher.XAppDefVer, "Manually specify app version for request header")
 	flag.StringVar(&qclauncher.ConfXLibVer, "xlibver", qclauncher.XLibDefVer, "Manually specify lib version for request header")
+	flag.StringVar(&qclauncher.ConfXSrcFp, "fp", qclauncher.XSrcFpDef, "Manually specify Bethesda hardware fingerprint for request header")
 	flag.StringVar(&qclauncher.ConfAppendCustomArgs, "customargs", "", "Append the specified args to the launch args")
 	flag.Int64Var(&qclauncher.ConfUpdateInterval, "updateinterval", 86400, "Time in seconds between checking for launcher updates") // 24 hours (86400)
 	flag.BoolVar(&qclauncher.ConfSkipUpdates, "skipupdates", false, "Skip checking for QC and launcher updates")
@@ -73,7 +74,7 @@ func execMain() {
 		_ = qclauncher.CheckUpdate(qclauncher.ConfEnforceHash, qclauncher.UpdateLauncher)
 	}
 	if qclauncher.ConfUseEntitlementAPI {
-		qclauncher.UseEntitlementAPI = true
+		qclauncher.UseEntitlementAPI = false
 	} else {
 		qclauncher.SetEntitlementAPI()
 	}

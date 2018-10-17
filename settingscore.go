@@ -18,6 +18,7 @@ type QCCoreSettings struct {
 	Password string
 	FilePath string
 	Language string
+	FP       string
 }
 
 func (s *QCCoreSettings) get(ls *LauncherStore) error {
@@ -46,6 +47,7 @@ func (s *QCCoreSettings) save(ls *LauncherStore) error {
 				GetCaller()), "error", err)
 			return err
 		}
+		s.FP = tmpFp
 		encoded, err := s.encode()
 		if err != nil {
 			logger.Errorw(fmt.Sprintf("%s: error encoding QC core settings during datastore save operation", GetCaller()),
@@ -127,27 +129,49 @@ func (s *QCCoreSettings) validate() error {
 	if s.Language == "" {
 		return errors.New("QC language must be specified")
 	}
-	return validateAccount(s.Username, s.Password)
+	fp, err := validateAccount(s.Username, s.Password, s.FP)
+	if fp == "" {
+		return errors.New("Unable to get required hardware fingerprint from Bethesda Launcher. Please try again.")
+	}
+	return err
 }
 
-func validateAccount(username, password string) error {
+func validateAccount(username, password, fp string) (string, error) {
+	var fpErr error
 	if !FileExists(GetDataFilePath()) {
-		return newLauncherClient(defTimeout).verifyCredentials(username, password)
+		fp, fpErr = getBNLFingerprint()
+		if fpErr != nil {
+			return "", fpErr
+		}
+		return fp, newLauncherClient(defTimeout).verifyCredentials(username, password)
 	}
 	cfg, err := GetConfiguration()
 	if err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error getting configuration during pre-save account validation",
 			GetCaller()), "error", err)
-		return newLauncherClient(defTimeout).verifyCredentials(username, password)
+		fp, fpErr = getBNLFingerprint()
+		if fpErr != nil {
+			return "", fpErr
+		}
+		return fp, newLauncherClient(defTimeout).verifyCredentials(username, password)
+	}
+	if cfg.Core.FP != "" && fp != "" {
+		fp = cfg.Core.FP
+	} else {
+		fp, fpErr = getBNLFingerprint()
+		if fpErr != nil {
+			return "", fpErr
+		}
 	}
 	if cfg.Core.Username == username && cfg.Core.Password == password {
 		token := &TokenAuth{}
 		if err := Get(token); err != nil {
-			return newLauncherClient(defTimeout).verifyCredentials(username, password)
+			return fp, newLauncherClient(defTimeout).verifyCredentials(username, password)
 		}
 		tmpKey = genKey()
 		tmpToken = token.Token
-		return nil
+		tmpFp = fp
+		return fp, nil
 	}
-	return newLauncherClient(defTimeout).verifyCredentials(username, password)
+	return fp, newLauncherClient(defTimeout).verifyCredentials(username, password)
 }

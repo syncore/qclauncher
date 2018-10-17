@@ -5,6 +5,10 @@ package qclauncher
 
 import (
 	"fmt"
+	"strings"
+
+	"net/url"
+	"os"
 
 	log "go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -18,7 +22,17 @@ var logger *qlogger
 
 func NewLogger() *qlogger {
 	logCfg := log.NewProductionConfig()
-	logCfg.OutputPaths = []string{getLogFilePath()}
+	winFileSink := func(u *url.URL) (log.Sink, error) {
+		// https://github.com/uber-go/zap/issues/621
+		return os.OpenFile(u.Path[1:], os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	}
+	if err := log.RegisterSink("winfile", winFileSink); err != nil {
+		// logger in main will have already registered before overall logger
+		if !strings.Contains(err.Error(), "already registered") {
+			panic(fmt.Errorf("Could not register sink for structured logger, error: %s", err))
+		}
+	}
+	logCfg.OutputPaths = []string{"winfile:///" + getLogFilePath()}
 	logCfg.Encoding = "json"
 	logCfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	if ConfDebug {
