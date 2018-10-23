@@ -91,23 +91,31 @@ func extractFp() error {
 		logger.Errorw(fmt.Sprintf("%s: error reading FP extraction tool asset", GetCaller()), "error", err)
 		return err
 	}
-	outname := filepath.Join(getExecutingPath(), "ExtractBNLauncherFP.exe")
-	err = ioutil.WriteFile(outname, a, 0644)
+	outName := filepath.Join(getExecutingPath(), "ExtractBNLauncherFP.exe")
+	err = ioutil.WriteFile(outName, a, 0644)
 	if err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error extracting FP extraction tool", GetCaller()), "error", err)
 		return err
 	}
-	blff := exec.Command(outname, extractArgs...)
-	logger.Debugf("extractFp: Executing blff (%s) and awaiting completion...", outname)
+	blff := exec.Command(outName, extractArgs...)
+	logger.Debugf("extractFp: Executing blff (%s) and awaiting completion...", outName)
 	err = blff.Run()
 	if err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error occurred while running FP extraction tool", GetCaller()), "error", err)
 		return err
 	}
-	err = os.Remove(outname)
+	err = os.Remove(outName)
 	if err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error occurred while cleaning up FP extraction tool", GetCaller()), "error", err)
 		return err
 	}
+	err = os.Remove(filepath.Join(getExecutingPath(), "blff_error.log"))
+	if err != nil && !os.IsNotExist(err) {
+		logger.Errorw(fmt.Sprintf("%s: error occurred while cleaning up FP extraction tool error log", GetCaller()), "error", err)
+	}
 	return nil
+}
+
+func isFPOverride() bool {
+	return ConfXSrcFp != XSrcFpDef
 }

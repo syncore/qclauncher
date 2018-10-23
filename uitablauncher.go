@@ -47,7 +47,7 @@ func newLauncherSettingsTab(launcherSettings *LauncherSettings) *QCLSettingsTab 
 							if cbAutoStartQC.Checked() {
 								ShowWarningMsg("Info",
 									fmt.Sprintf(
-										"The *next* time you run QCLauncher, QC will start directly and the QCLauncher UI will not be shown. To restore it, delete the %s file or start QCLauncher with qclauncher.exe -%s",
+										"The next time you run QCLauncher, QC will start directly and the QCLauncher UI will not be shown. To restore it, delete the %s file or start QCLauncher with qclauncher.exe -%s",
 										DataFile, ShowMainWindowFlag), qclauncherSettingsWindow)
 							}
 						},

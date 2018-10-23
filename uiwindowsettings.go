@@ -18,6 +18,12 @@ const (
 
 type QCLSettingsWindow struct {
 	*walk.MainWindow
+	Options *QCLSettingsWindowOptions
+	Binder  *walk.DataBinder
+}
+
+type QCLSettingsWindowOptions struct {
+	CanSaveSettings bool
 }
 
 var qclauncherSettingsWindow *QCLSettingsWindow
@@ -30,32 +36,47 @@ func (sw *QCLSettingsWindow) WndProc(hwnd win.HWND, msg uint32, wParam, lParam u
 	return sw.MainWindow.WndProc(hwnd, msg, wParam, lParam)
 }
 
-func newSettingsWindow(cfg *Configuration) *QCLSettingsWindow {
+func newSettingsWindow(cfg *Configuration, opts *QCLSettingsWindowOptions) *QCLSettingsWindow {
 	settingsWindow := &QCLSettingsWindow{}
+	settingsWindow.Options = opts
 	settingsTabs := getSettingsTabs(cfg)
 	settingsTabPages := getSettingsTabPages(settingsTabs)
+	var swBinder *walk.DataBinder
 	icon := getAppIcon()
+	binder := wd.DataBinder{
+		AssignTo:       &swBinder,
+		DataSource:     settingsWindow.Options,
+		ErrorPresenter: wd.ToolTipErrorPresenter{},
+	}
 	if err := (wd.MainWindow{
 		AssignTo:             &settingsWindow.MainWindow,
 		Title:                "Configuration",
 		Icon:                 icon,
 		UseCustomWindowStyle: true,
-		CustomWindowStyle:    win.WS_CAPTION | win.WS_SYSMENU | win.WS_MINIMIZEBOX,
+		CustomWindowStyle:    win.WS_DLGFRAME,
 		MinSize:              wd.Size{Width: settingsWindowWidth, Height: settingsWindowHeight},
 		MaxSize:              wd.Size{Width: settingsWindowWidth, Height: settingsWindowHeight},
 		Size:                 wd.Size{Width: settingsWindowWidth, Height: settingsWindowHeight},
 		Layout:               wd.VBox{},
+		DataBinder:           binder,
 		Children: []wd.Widget{
 			wd.TabWidget{
-				Pages: settingsTabPages,
+				Pages:   settingsTabPages,
+				Name:    "SettingsTabPages",
+				Enabled: wd.Bind("CanSaveSettings"),
 			},
 			wd.Composite{
 				Layout: wd.HBox{},
 				Children: []wd.Widget{
+					wd.Label{
+						Text:    "Saving data...please wait.",
+						Visible: wd.Bind("!SettingsTabPages.Enabled"),
+					},
 					wd.HSpacer{},
 					wd.PushButton{
 						Text:        "Save All",
 						ToolTipText: "Save all settings and verify account with Bethesda",
+						Enabled:     wd.Bind("CanSaveSettings"),
 						OnClicked: func() {
 							if err := settingsTabsBinderSubmit(settingsTabs); err != nil {
 								logger.Errorw(fmt.Sprintf("%s: error submitting all tabs' saved settings from binder", GetCaller()),
@@ -63,29 +84,34 @@ func newSettingsWindow(cfg *Configuration) *QCLSettingsWindow {
 								ShowErrorMsg("Save Error", err.Error(), settingsWindow.MainWindow)
 								return
 							}
-							if cfg.Core.FP == "" {
+							if cfg.Core.FP == "" && !isFPOverride() {
 								ShowInfoMsg("Opening Bethesda Launcher",
-									"The Bethesda Launcher will now open to get the unique Bethesda hardware fingerprint used for "+
+									"The Bethesda Launcher will now open to get the Bethesda hardware fingerprint used for "+
 										fmt.Sprintf("QC authentication. This may take up to 45 seconds. The Bethesda Launcher may start and exit up to %d times. ",
-											fpAttempts)+"Please do not disturb the launcher and please wait until this is complete. If the launcher is performing an update, "+
-										fmt.Sprintf("then this will probably fail. Try again after the update is completed. If successful, this only needs to be performed once unless you delete your %s file.", DataFile),
+											fpAttempts)+"Signing into the launcher is not required. Please do not disturb the launcher during this process. "+
+										"This will probably fail if the launcher is performing an update. In that case, try again "+
+										fmt.Sprintf("after the update has finished. If successful, this only needs to be performed once unless you delete your %s file or your hardware changes.", DataFile),
 									settingsWindow.MainWindow)
 							}
-							// TODO: this is all on the UI thread and with new FP step might be problematic
-							if err := saveConfiguration(cfg); err != nil {
-								ShowErrorMsg("Save Error", err.Error(), settingsWindow.MainWindow)
-								return
-							}
-							defer settingsWindow.close()
-							if err := handlePostSave(cfg); err != nil {
-								logger.Errorw(fmt.Sprintf("%s: error executing post-save function", GetCaller()), "error", err)
-								return
-							}
+							go func() {
+								defer settingsWindow.close()
+								defer settingsWindow.setSaveStatus(true)
+								settingsWindow.setSaveStatus(false)
+								if err := saveConfiguration(cfg); err != nil {
+									ShowErrorMsg("Save Error", err.Error(), settingsWindow.MainWindow)
+									return
+								}
+								if err := handlePostSave(cfg); err != nil {
+									logger.Errorw(fmt.Sprintf("%s: error executing post-save function", GetCaller()), "error", err)
+									return
+								}
+							}()
 						},
 					},
 					wd.PushButton{
 						Text:        "Cancel",
 						ToolTipText: "Cancel",
+						Enabled:     wd.Bind("CanSaveSettings"),
 						OnClicked: func() {
 							settingsWindow.close()
 						},
@@ -93,6 +119,7 @@ func newSettingsWindow(cfg *Configuration) *QCLSettingsWindow {
 					wd.PushButton{
 						Text:        "Reset All",
 						ToolTipText: "Clear all settings and account information",
+						Enabled:     wd.Bind("CanSaveSettings"),
 						OnClicked: func() {
 							result := walk.MsgBox(settingsWindow.MainWindow, "Reset All Settings",
 								"Delete All Saved Settings?", walk.MsgBoxYesNo)
@@ -121,6 +148,7 @@ func newSettingsWindow(cfg *Configuration) *QCLSettingsWindow {
 		logger.FatalUIw(fmt.Sprintf("%s: Fatal error during creation of configuration UI wrapper window", GetCaller()), "error", err)
 	}
 	qclauncherSettingsWindow = settingsWindow
+	settingsWindow.Binder = swBinder
 	return settingsWindow
 }
 
@@ -198,6 +226,23 @@ func (sw *QCLSettingsWindow) close() {
 	if err := sw.MainWindow.Close(); err != nil { // automatically disposes (via 'Cancel'/'Reset' buttons)
 		logger.Errorw(fmt.Sprintf("%s: error closing settings window", GetCaller()), "error", err)
 	}
+}
+
+func (sw *QCLSettingsWindow) setSaveStatus(canSaveSettings bool) {
+	if sw == nil || sw.Options == nil {
+		return
+	}
+	sw.Options.CanSaveSettings = canSaveSettings
+	if err := sw.refreshBoundSettings(); err != nil {
+		logger.Error(fmt.Sprintf("%s: %s", GetCaller(), err))
+	}
+}
+
+func (sw *QCLSettingsWindow) refreshBoundSettings() error {
+	if err := sw.Binder.Reset(); err != nil {
+		return fmt.Errorf("%s: Error resetting data binder: %s", GetCaller(), err)
+	}
+	return nil
 }
 
 func (sw *QCLSettingsWindow) cleanup() {

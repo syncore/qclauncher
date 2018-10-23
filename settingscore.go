@@ -129,6 +129,9 @@ func (s *QCCoreSettings) validate() error {
 	if s.Language == "" {
 		return errors.New("QC language must be specified")
 	}
+	if isFPOverride() {
+		s.FP = ConfXSrcFp
+	}
 	fp, err := validateAccount(s.Username, s.Password, s.FP)
 	if fp == "" {
 		return errors.New("Unable to get required hardware fingerprint from Bethesda Launcher. Please try again.")
@@ -139,39 +142,46 @@ func (s *QCCoreSettings) validate() error {
 func validateAccount(username, password, fp string) (string, error) {
 	var fpErr error
 	if !FileExists(GetDataFilePath()) {
-		fp, fpErr = getBNLFingerprint()
-		if fpErr != nil {
-			return "", fpErr
+		if fp == "" {
+			fp, fpErr = getBNLFingerprint()
+			if fpErr != nil {
+				return "", fpErr
+			}
+			return fp, newLauncherClient(defTimeout).verifyCredentials(username, password)
+		} else {
+			tmpFp = fp
 		}
-		return fp, newLauncherClient(defTimeout).verifyCredentials(username, password)
-	}
-	cfg, err := GetConfiguration()
-	if err != nil {
-		logger.Errorw(fmt.Sprintf("%s: error getting configuration during pre-save account validation",
-			GetCaller()), "error", err)
-		fp, fpErr = getBNLFingerprint()
-		if fpErr != nil {
-			return "", fpErr
-		}
-		return fp, newLauncherClient(defTimeout).verifyCredentials(username, password)
-	}
-	if cfg.Core.FP != "" && fp != "" {
-		fp = cfg.Core.FP
 	} else {
-		fp, fpErr = getBNLFingerprint()
-		if fpErr != nil {
-			return "", fpErr
-		}
-	}
-	if cfg.Core.Username == username && cfg.Core.Password == password {
-		token := &TokenAuth{}
-		if err := Get(token); err != nil {
+		cfg, err := GetConfiguration()
+		if err != nil {
+			logger.Errorw(fmt.Sprintf("%s: error getting configuration during pre-save account validation",
+				GetCaller()), "error", err)
+			fp, fpErr = getBNLFingerprint()
+			if fpErr != nil {
+				return "", fpErr
+			}
 			return fp, newLauncherClient(defTimeout).verifyCredentials(username, password)
 		}
-		tmpKey = genKey()
-		tmpToken = token.Token
-		tmpFp = fp
-		return fp, nil
+		if isFPOverride() {
+			fp = ConfXSrcFp
+		} else if cfg.Core.FP != "" {
+			fp = cfg.Core.FP
+		} else {
+			fp, fpErr = getBNLFingerprint()
+			if fpErr != nil {
+				return "", fpErr
+			}
+		}
+		if cfg.Core.Username == username && cfg.Core.Password == password {
+			token := &TokenAuth{}
+			if err := Get(token); err != nil {
+				return fp, newLauncherClient(defTimeout).verifyCredentials(username, password)
+			}
+			tmpKey = genKey()
+			tmpToken = token.Token
+			tmpFp = fp
+			return fp, nil
+		}
 	}
 	return fp, newLauncherClient(defTimeout).verifyCredentials(username, password)
 }

@@ -91,7 +91,7 @@ func configureSettings() {
 		cfg = GetEmptyConfiguration()
 	}
 	isCollectingSettings = true
-	settingsWindow := newSettingsWindow(cfg)
+	settingsWindow := newSettingsWindow(cfg, &QCLSettingsWindowOptions{CanSaveSettings: true})
 	settingsWindow.Run()
 }
 
