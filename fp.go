@@ -1,3 +1,5 @@
+// QCLauncher by syncore <syncore@syncore.org> 2017
+// https://github.com/syncore/qclauncher
 package qclauncher
 
 import (
@@ -85,8 +87,9 @@ func readFromPipe(c chan fpChanResult) {
 }
 
 func extractFp() error {
-	a, err := resources.Asset("../../resources/bin/blff.exe") // https://github.com/syncore/blff
-	//a, err := resources.Asset("../../resources/bin/blff_console.exe")
+	// for executable source code see https://github.com/syncore/blff or qclauncher\resources\bin_src\
+	a, err := resources.Asset("../../resources/bin/blff/blff.exe")
+	//a, err := resources.Asset("../../resources/bin/blff/blffconsole.exe")
 	if err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error reading FP extraction tool asset", GetCaller()), "error", err)
 		return err

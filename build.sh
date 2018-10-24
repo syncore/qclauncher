@@ -2,6 +2,9 @@
 export GOPATH=$(go env GOPATH)
 cd $GOPATH/src/github.com/syncore/qclauncher
 rm -rf $GOPATH/src/github.com/syncore/qclauncher/bin 2>/dev/null
+chmod +x $GOPATH/src/github.com/syncore/qclauncher/resources/bin_src/get_blff_linux.sh
+./resources/bin_src/get_blff_linux.sh
+cd $GOPATH/src/github.com/syncore/qclauncher
 go get github.com/kardianos/govendor
 go get github.com/josephspurrier/goversioninfo/cmd/goversioninfo
 go get github.com/kevinburke/go-bindata/...
@@ -19,7 +22,7 @@ chmod +x $GOPATH/src/github.com/syncore/qclauncher/cmd/qclauncher/go-bindata
 ./cmd/qclauncher/goversioninfo -manifest "resources/qclauncher.manifest" -icon "resources/qclauncher.ico" -o "qclauncher_amd64.syso" -64 resources/versioninfo.json
 cd $GOPATH/src/github.com/syncore/qclauncher/cmd/qclauncher
 #chdir because ../../resources/img must match exactly
-./go-bindata -pkg "resources" -o ../../resources/logo.go ../../resources/img
+./go-bindata -pkg "resources" -o ../../resources/res.go ../../resources/img ../../resources/bin/blff
 GOOS=windows GOARCH=amd64 govendor build -o qclauncher.exe -ldflags="-H windowsgui -s -w" main.go
 rm $GOPATH/src/github.com/syncore/qclauncher/cmd/qclauncher/qclauncher_amd64.syso 2>/dev/null
 rm $GOPATH/src/github.com/syncore/qclauncher/cmd/qclauncher/govendor 2>/dev/null

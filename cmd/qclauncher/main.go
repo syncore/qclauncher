@@ -6,7 +6,7 @@
 package main
 
 //go:generate goversioninfo -manifest "../../resources/qclauncher.manifest" -icon "../../resources/qclauncher.ico" -o "qclauncher_amd64.syso" -64 ../../resources/versioninfo.json
-//go:generate go-bindata -pkg "resources" -o ../../resources/res.go ../../resources/img ../../resources/bin
+//go:generate go-bindata -pkg "resources" -o ../../resources/res.go ../../resources/img ../../resources/bin/blff
 
 import (
 	"flag"

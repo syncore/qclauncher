@@ -39,3 +39,7 @@ qclauncher.log
 qclauncher_amd64.syso
 data.qcl
 data.qcl.lock
+blff*.zip
+blff_error.log
+blff_src*
+nuget.exe
