@@ -2,7 +2,10 @@
 cd %GOPATH%\src\github.com\syncore\qclauncher
 if exist %GOPATH%\src\github.com\syncore\qclauncher\bin rmdir /S /Q %GOPATH%\src\github.com\syncore\qclauncher\bin
 
-:: NOTE: blff build will require Visual Studio/MSBuild (see resources\bin_src\README.md)
+:: NOTE: building the blff tool that is packaged with qclauncher will require Visual Studio or MSBuild (see resources\bin_src\README.md)
+:: If you don't have MSBuild or Visual Studio, download Build Tools For Visual Studio 2017 at:
+:: https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017
+:: Afterwards, adjust the `msBuildDir` inside of resources\bin_src\build_blff_src.bat to: %programfiles(x86)%\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin
 call "%GOPATH%\src\github.com\syncore\qclauncher\resources\bin_src\build_blff_src.bat"
 
 cd %GOPATH%\src\github.com\syncore\qclauncher
@@ -20,7 +23,7 @@ if exist data.qcl.lock del /Q data.qcl.lock
 cd cmd\qclauncher
 go generate
 govendor build -o qclauncher.exe -ldflags="-H windowsgui -s -w"
-:: Comment previous line and uncomment the following line to display errors/msg on stdout
+:: Comment the previous line and uncomment the following line to display errors/msg on stdout
 ::govendor build -o qclauncher.exe
 if exist qclauncher_amd64.syso del /Q qclauncher_amd64.syso
 if exist govendor.exe del /Q govendor.exe

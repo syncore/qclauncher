@@ -1,5 +1,6 @@
 // QCLauncher by syncore <syncore@syncore.org> 2017
 // https://github.com/syncore/qclauncher
+
 package qclauncher
 
 import (
@@ -88,32 +89,27 @@ func readFromPipe(c chan fpChanResult) {
 
 func extractFp() error {
 	// for executable source code see https://github.com/syncore/blff or qclauncher\resources\bin_src\
-	a, err := resources.Asset("../../resources/bin/blff/blff.exe")
-	//a, err := resources.Asset("../../resources/bin/blff/blffconsole.exe")
+	a, err := resources.Asset("../../resources/bin/blff/blff.exe") // "../../resources/bin/blff/blffconsole.exe"
 	if err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error reading FP extraction tool asset", GetCaller()), "error", err)
 		return err
 	}
 	outName := filepath.Join(getExecutingPath(), "ExtractBNLauncherFP.exe")
-	err = ioutil.WriteFile(outName, a, 0644)
-	if err != nil {
+	if err = ioutil.WriteFile(outName, a, 0644); err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error extracting FP extraction tool", GetCaller()), "error", err)
 		return err
 	}
 	blff := exec.Command(outName, extractArgs...)
 	logger.Debugf("extractFp: Executing blff (%s) and awaiting completion...", outName)
-	err = blff.Run()
-	if err != nil {
+	if err = blff.Run(); err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error occurred while running FP extraction tool", GetCaller()), "error", err)
 		return err
 	}
-	err = os.Remove(outName)
-	if err != nil {
+	if err = os.Remove(outName); err != nil {
 		logger.Errorw(fmt.Sprintf("%s: error occurred while cleaning up FP extraction tool", GetCaller()), "error", err)
 		return err
 	}
-	err = os.Remove(filepath.Join(getExecutingPath(), "blff_error.log"))
-	if err != nil && !os.IsNotExist(err) {
+	if err = os.Remove(filepath.Join(getExecutingPath(), "blff_error.log")); err != nil && !os.IsNotExist(err) {
 		logger.Errorw(fmt.Sprintf("%s: error occurred while cleaning up FP extraction tool error log", GetCaller()), "error", err)
 	}
 	return nil

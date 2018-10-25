@@ -16,7 +16,7 @@ Why?
 	 -  Is basically a [special version](https://bitbucket.org/chromiumembedded/cef) of the Chrome web browser that sits in the background while you play. Depending on your system, this may be heavy on resources for you.
 	 - May display [messages at inconvenient times](https://www.reddit.com/r/QuakeChampions/comments/6kffch/dear_bethesda_do_not_do_this/).
  - Quickly and easily enable undocumented game options.
- 
+
  - Easily add Quake Champions to Steam and use the Steam overlay if you have not purchased the Quake Champions Early Access version through Steam.
 
 ----------
@@ -40,7 +40,7 @@ How to Use (Setup)
  1. Download the [latest release](https://github.com/syncore/qclauncher/releases) and extract the `qclauncher.exe` file from the zip file.
  2. Double click `qclauncher.exe` to run QCLauncher.
  3. Click the 'Configure' button and enter the requested information to configure your settings. For the QC user name and password, this will be the same info used for the Bethesda launcher (or the Bethesda forums).
- 4. When selecting the QC exe, the default location is: `C:\Program Files (x86)\Bethesda.net Launcher\games\client\bin\pc\QuakeChampions.exe`
+ 4. When selecting the QC exe, the default location is: `C:\Program Files (x86)\bethesda.net Launcher\games\quakechampions\client\bin\pc`
  5. *Steam (Optional)*: If you want to add Quake Champions as a non-Steam game, this can be done under the 'Launcher Settings' tab. Click the check box labeled 'Add as a non-Steam Game (for Steam overlay)'. After you save your settings, Steam will open. Find and select `qclauncher.exe` in Steam to add it as a non-Steam game. You can rename it to Quake Champions if you want, so that it will be displayed that way in your friends list.
  6. Click the 'Save All' button. If successful, you should be able to play by clicking the 'Play' button.
 
@@ -57,12 +57,13 @@ Developers: Build from Source Code (you can skip this if you don't plan on worki
 
  1. Download and install the latest stable release of the Go Programming Language, which is [available here.](https://golang.org/dl/)
  2. *Windows* - To get the QCLauncher source: `go get -ldflags="-H windowsgui -s -w" github.com/syncore/qclauncher`
- 3. *Linux* - To get the QCLauncher source: `GOOS=windows GOARCH=amd64 go get -d -ldflags="-H windowsgui -s -w" github.com/syncore/qclauncher`
- 4. Find your GOPATH. This can be found by entering:  `go env GOPATH` on the command line.
- 5. Change directory to `GOPATH\src\github.com\syncore\qclauncher`
- 6. *Windows* - To build, run `build.bat`
- 7. *Linux* - To build, run `build.sh` (the application only runs on Windows, but can be built on Linux/OSX).
- 8. If everything went well, you should have the `qclauncher.exe` file in the `bin` directory.
+ 3. *Windows* - If you do *not* have Microsoft Visual Studio 2017 *Enterprise Edition*, download the [Build Tools For Visual Studio 2017](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017) from Microsoft. Afterwards, adjust the `msBuildDir` variable in [this file](resources/bin_src/build_blff_src.bat). If you have VS2017, but not the Enterprise edition (i.e. Professional), adjust the `msBuildDir` variable to point to its `MSBuild.exe` executable location.
+ 4. *Linux* - To get the QCLauncher source: `GOOS=windows GOARCH=amd64 go get -d -ldflags="-H windowsgui -s -w" github.com/syncore/qclauncher`
+ 5. Find your GOPATH. This can be found by entering:  `go env GOPATH` on the command line.
+ 6. Change directory to `GOPATH\src\github.com\syncore\qclauncher`
+ 7. *Windows* - To build, run `build.bat`
+ 8. *Linux* - To build, run `build.sh` (the application only runs on Windows, but can be built on Linux/OSX).
+ 9. If everything went well, you should have the `qclauncher.exe` file in the `bin` directory.
 
 Is QCLauncher Considered a Cheat?
 -------------

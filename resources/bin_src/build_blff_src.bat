@@ -14,10 +14,14 @@ go build -o get_blff_src.exe get_blff_src.go
 call "%GOPATH%\src\github.com\syncore\qclauncher\resources\bin_src\get_blff_src.exe"
 set blffSrcDir=%GOPATH%\src\github.com\syncore\qclauncher\resources\bin_src\blff_src
 
-:: The assumption here is that you'll build with Visual Studio 2017 Enterprise. If you don't have VS2017 Enterprise,
-:: you will need to adjust msBuildDir and point it to your VS or MSBuild directory that contains MSBuild.exe.
-:: For 2017 see: https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017
-:: For 2016 see: https://www.microsoft.com/en-us/download/details.aspx?id=48159
+:: NOTE: Building this will require Visual Studio or MSBuild
+:: If you don't have MSBuild (or Visual Studio), download Build Tools For Visual Studio 2017 at:
+:: https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017
+
+:: Afterwards, uncomment the following line:
+:: set msBuildDir=%programfiles(x86)%\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin
+
+:: and comment out the following line:
 set msBuildDir=%programfiles(x86)%\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin
 
 call "%GOPATH%\src\github.com\syncore\qclauncher\resources\bin_src\nuget.exe" restore %blffSrcDir%\blff.sln

@@ -55,10 +55,10 @@ func Launch() error {
 	}
 	var projectID, branchID int
 	if UseEntitlementAPI {
-		entitlementInfo, err := lc.getEntitlementInfo()
-		if err != nil {
-			logger.Errorw(fmt.Sprintf("%s: getEntitlementInfo error", GetCaller()), "error", err, "data", entitlementInfo)
-			return err
+		entitlementInfo, eerr := lc.getEntitlementInfo()
+		if eerr != nil {
+			logger.Errorw(fmt.Sprintf("%s: getEntitlementInfo error", GetCaller()), "error", eerr, "data", entitlementInfo)
+			return eerr
 		}
 		logger.Debugw("Entitlement info", "entitlementInfo", entitlementInfo)
 		projectID, branchID, _, err = getProjectBranchBuildIdentifiers(entitlementInfo)
@@ -67,10 +67,10 @@ func Launch() error {
 			return err
 		}
 	} else {
-		buildInfo, err := lc.getBuildInfo()
-		if err != nil {
-			logger.Errorw(fmt.Sprintf("%s: getBuildInfo error", GetCaller()), "error", err, "data", buildInfo)
-			return err
+		buildInfo, berr := lc.getBuildInfo()
+		if berr != nil {
+			logger.Errorw(fmt.Sprintf("%s: getBuildInfo error", GetCaller()), "error", berr, "data", buildInfo)
+			return berr
 		}
 		logger.Debugw("Build info", "buildInfo", buildInfo)
 		projectID, branchID = buildInfo.Projects[0].ID, buildInfo.Branches[0].ID

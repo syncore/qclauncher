@@ -88,7 +88,7 @@ func newSettingsWindow(cfg *Configuration, opts *QCLSettingsWindowOptions) *QCLS
 								ShowInfoMsg("Opening Bethesda Launcher",
 									"The Bethesda Launcher will now open to get the Bethesda hardware fingerprint used for "+
 										fmt.Sprintf("QC authentication. This may take up to 45 seconds. The Bethesda Launcher may start and exit up to %d times. ",
-											fpAttempts)+"Signing into the launcher is not required. Please do not disturb the launcher during this process. "+
+											fpAttempts)+"Please do not disturb the launcher during this process (logging into the launcher is not necessary). "+
 										"This will probably fail if the launcher is performing an update. In that case, try again "+
 										fmt.Sprintf("after the update has finished. If successful, this only needs to be performed once unless you delete your %s file or your hardware changes.", DataFile),
 									settingsWindow.MainWindow)

@@ -108,7 +108,7 @@ type AuthResponse struct {
 	SessionID             string      `json:"session_id"`
 	BeamToken             []string    `json:"beam_token"`
 	EntitlementIDs        []int       `json:"entitlement_ids"`
-	isPreSaveVerification bool        `json:"-"` // custom flag for internal launcher use
+	isPreSaveVerification bool        // custom flag for internal launcher use
 }
 
 type BuildInfoResponse struct {

@@ -311,7 +311,7 @@ func getAll(h localRequestHeader) (headerMapping, error) {
 	}
 	if e.fp {
 		fp := ""
-		if ConfXSrcFp != XSrcFpDef {
+		if isFPOverride() {
 			all[hkeyXSrcFp] = []string{ConfXSrcFp}
 		} else {
 			if tmpFp != "" {

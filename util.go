@@ -4,7 +4,6 @@
 package qclauncher
 
 import (
-	"crypto/sha1"
 	"fmt"
 	"math/rand"
 	"os"
@@ -159,14 +158,6 @@ func randStr(strlen int) string {
 		result[i] = chars[r.Intn(len(chars))]
 	}
 	return string(result)
-}
-
-func genFp() string {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	h := sha1.New()
-	h.Write([]byte(randStr(r.Intn(64)*4 + 64)))
-	s := fmt.Sprintf("%x", h.Sum(nil))
-	return strings.ToUpper(s)
 }
 
 func genKey() *[]byte {
